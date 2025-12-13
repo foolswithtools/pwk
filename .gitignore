@@ -1,0 +1,19 @@
+# Personal data - keep private
+logs/*.md
+!logs/.gitkeep
+
+work/*
+!work/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+*.iml
