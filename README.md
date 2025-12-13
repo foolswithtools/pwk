@@ -1,95 +1,84 @@
-# Personal Work Kit (PWK)
+# Personal Work Kit
 
-A markdown-based personal productivity system designed for [Claude Code](https://claude.ai/claude-code). PWK uses slash commands to capture activities, plan your day, and delegate tasks to AI.
+A collection of productivity systems for [Claude Code](https://claude.ai/claude-code) built on **Activity-Driven Development (ADD)** — where captured activities become the source of truth for planning, task breakdown, and execution.
 
-## Philosophy
+## Systems
 
-PWK is built on **Activity-Driven Development (ADD)**:
+This repository contains two variants:
+
+| System | Description | Best For |
+|--------|-------------|----------|
+| **[PWK](./pwk/)** | Local markdown-based system | Single device, offline, privacy-focused |
+| **[GPWK](./gpwk/)** | GitHub-integrated hybrid system | Multi-device, collaboration, persistent tracking |
+
+### PWK (Personal Work Kit)
+
+The original local-only system using markdown files:
+- Tasks stored in `logs/YYYY-MM-DD.md`
+- Work items in `work/[name]/` folders
+- Manual carryover between days
+- Fully offline capable
+
+```bash
+# To use PWK, copy to your project:
+cp -r pwk /path/to/your/project/
+```
+
+[→ PWK Documentation](./pwk/README.md)
+
+### GPWK (GitHub Personal Work Kit)
+
+GitHub-integrated variant using Issues and Projects:
+- Tasks as GitHub Issues
+- Status via Project columns (Inbox, Today, This Week, Backlog, Done)
+- Carryover tracking via labels (`pwk:c1`, `pwk:c2`, `pwk:c3`)
+- Local logs for private reflection (hybrid approach)
+- Access from any device via github.com
+
+```bash
+# To use GPWK, copy to your project:
+cp -r gpwk /path/to/your/project/
+
+# Then run setup:
+/gpwk.setup
+```
+
+[→ GPWK Documentation](./gpwk/README.md)
+
+## Comparison
+
+| Feature | PWK | GPWK |
+|---------|-----|------|
+| Task storage | Local markdown | GitHub Issues |
+| Status tracking | Log sections | Project columns |
+| Carryover | Manual copy | Label-based (`c1/c2/c3`) |
+| Work items | Local folders | Parent + sub-issues |
+| AI results | Written to logs | Issue comments |
+| Multi-device | No | Yes |
+| Offline | Full | Local logs only |
+| Collaboration | No | Possible |
+
+## Core Philosophy
+
+Both systems share the same principles:
 
 - **Capture First**: Log activities as they happen, process later
-- **Carryover, Not Carry Burden**: Unfinished work flows to the next day
+- **Carryover, Not Carry Burden**: Unfinished work flows forward, not mental load
 - **Breakdown for Clarity**: Complex work becomes actionable through decomposition
-- **Hybrid Execution**: Tasks are either Personal `[P]` or AI-delegatable `[AI]`
+- **Hybrid Execution**: Tasks are explicitly personal `[P]` or AI-delegatable `[AI]`
+- **Principles Over Productivity**: Your work style governs, not external dogma
 
-## Installation
+## Shared Resources
 
-1. Copy this directory into your project:
-   ```bash
-   cp -r personalworkkit /path/to/your/project/
-   ```
-
-2. Open your project in VS Code with Claude Code extension
-
-3. Start using slash commands (type `/pwk.` to see all commands)
-
-## Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/pwk.capture [activity]` | Quick capture activity or thought |
-| `/pwk.log [date]` | View and manage daily logs |
-| `/pwk.plan [today\|week]` | Plan your day or week |
-| `/pwk.breakdown [work]` | Decompose complex work into tasks |
-| `/pwk.carryover` | Move incomplete tasks to today |
-| `/pwk.review [--quick\|--full]` | End-of-day reflection |
-| `/pwk.delegate [--list\|--execute]` | Manage AI-delegatable tasks |
-| `/pwk.principles` | View/edit your work principles |
-
-## Daily Workflow
-
-```
-Morning:
-  /pwk.carryover    → Review yesterday's incomplete items
-  /pwk.plan today   → Plan today's tasks
-
-Throughout Day:
-  /pwk.capture      → Log activities as you work
-  /pwk.breakdown    → Break down complex tasks
-  /pwk.delegate     → Queue AI tasks
-
-Evening:
-  /pwk.review       → Reflect and close out the day
-```
-
-## Directory Structure
-
-```
-personalworkkit/
-├── .claude/commands/    # Slash command definitions
-├── memory/              # Personal principles and goals
-├── templates/           # Reusable markdown templates
-├── logs/                # Daily activity logs (gitignored)
-├── work/                # Multi-day work items (gitignored)
-├── inbox/               # Quick capture area
-└── pwk-context.md       # Comprehensive reference guide
-```
-
-## Task Notation
-
-- `[P]` - Personal task (you must do it)
-- `[AI]` - AI-delegatable (Claude can help)
-- `[W:x]` - Waiting on something/someone
-- `[C]` / `[C2]` / `[C3]` - Carryover count (3+ triggers breakdown)
-
-## Getting Started
-
-1. Run `/pwk.principles` to customize your work style
-2. Run `/pwk.plan today` to create your first daily log
-3. Use `/pwk.capture` throughout your day
-4. End with `/pwk.review`
-
-## Customization
-
-Edit `memory/principles.md` to adjust:
-- Deep work window duration
-- Daily task limits
-- Carryover thresholds
-- Delegation criteria
+| File | Purpose |
+|------|---------|
+| [c4-model-context.md](./c4-model-context.md) | C4 architecture model reference |
+| [c4-model-prompts.md](./c4-model-prompts.md) | Prompts for creating C4 diagrams |
 
 ## Requirements
 
 - [Claude Code](https://claude.ai/claude-code) CLI or VS Code extension
-- No other dependencies
+- For GPWK: [GitHub CLI](https://cli.github.com/) (`gh`) installed and authenticated
 
 ## License
 
