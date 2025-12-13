@@ -10,7 +10,7 @@ Review today's accomplishments, reflect on the day, and prepare for tomorrow.
 ## Behavior
 
 1. **Load today's log**:
-   - Read `logs/YYYY-MM-DD.md`
+   - Read `pwk/logs/YYYY-MM-DD.md`
    - Gather all sections: Plan, Activity Stream, Tasks
 
 2. **Calculate metrics**:
@@ -146,6 +146,6 @@ Recommendations:
 
 ## Integration
 
-- Updates `logs/YYYY-MM-DD.md` with Reflections section
+- Updates `pwk/logs/YYYY-MM-DD.md` with Reflections section
 - Prepares data for `/pwk.carryover` tomorrow
 - Can trigger `/pwk.breakdown` for chronic carryover items

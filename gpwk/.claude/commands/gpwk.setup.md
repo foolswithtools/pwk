@@ -98,7 +98,7 @@ gh project field-list $PROJECT_NUM --owner @me --format json
 
 ### Step 6: Save Configuration
 
-Save the configuration to `memory/github-config.md`:
+Save the configuration to `gpwk/memory/github-config.md`:
 
 ```markdown
 # GitHub Configuration
@@ -129,7 +129,7 @@ All labels created with `pwk:*`, `priority:*`, `energy:*`, `status:*` prefixes.
 ### Step 7: Create .gitkeep files
 
 ```bash
-touch logs/.gitkeep
+touch gpwk/logs/.gitkeep
 ```
 
 ### Step 8: Confirm Setup
@@ -161,4 +161,4 @@ Next steps:
 
 - All commands use `--force` for labels to make setup idempotent
 - Project field IDs are required for gpwk.triage and other commands
-- Configuration is stored locally in memory/github-config.md
+- Configuration is stored locally in gpwk/memory/github-config.md

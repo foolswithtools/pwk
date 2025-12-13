@@ -1,9 +1,14 @@
 # Personal data - keep private
-logs/*.md
-!logs/.gitkeep
+# PWK logs and work items
+pwk/logs/*.md
+!pwk/logs/.gitkeep
 
-work/*
-!work/.gitkeep
+pwk/work/*
+!pwk/work/.gitkeep
+
+# GPWK logs
+gpwk/logs/*.md
+!gpwk/logs/.gitkeep
 
 # OS files
 .DS_Store

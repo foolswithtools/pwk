@@ -11,8 +11,8 @@ You are creating a plan that combines GitHub issues with a local daily log (hybr
 
 ### Step 1: Read Configuration
 
-Read `memory/github-config.md` to get repository and project details.
-Read `memory/principles.md` to understand user's work preferences:
+Read `gpwk/memory/github-config.md` to get repository and project details.
+Read `gpwk/memory/principles.md` to understand user's work preferences:
 - Daily task limit
 - Deep work windows
 - Energy matching preferences
@@ -59,7 +59,7 @@ Apply principles to suggest a balanced day:
 
 ### Step 6: Create Local Log File
 
-Create or update `logs/YYYY-MM-DD.md`:
+Create or update `gpwk/logs/YYYY-MM-DD.md`:
 
 ```markdown
 # Daily Log: YYYY-MM-DD
@@ -137,7 +137,7 @@ If `$ARGUMENTS` is `week`:
 2. Identify issues due this week
 3. Highlight overdue or heavily-carried-over items
 4. Suggest redistribution if any day is overloaded
-5. Create a weekly overview file `logs/YYYY-WXX-week.md`
+5. Create a weekly overview file `gpwk/logs/YYYY-WXX-week.md`
 
 ## Error Handling
 
@@ -147,7 +147,7 @@ If `$ARGUMENTS` is `week`:
 
 ## Integration Points
 
-- References `memory/principles.md` for work preferences
-- Creates files in `logs/` directory
+- References `gpwk/memory/principles.md` for work preferences
+- Creates files in `gpwk/logs/` directory
 - Works with GitHub Project "Today" column
 - Feeds into `/gpwk.delegate` for AI task execution

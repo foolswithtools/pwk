@@ -10,7 +10,7 @@ Manage your personal work principles that govern how you work.
 ## Behavior
 
 ### View Mode (default)
-1. Load `memory/principles.md`
+1. Load `pwk/pwk/memory/principles.md`
 2. Display all principles with descriptions
 3. Show how principles are applied in other commands
 
@@ -109,7 +109,7 @@ Application:
 - [ ] /pwk.plan: Warn if meetings scheduled Wednesday
 - [ ] /pwk.review: Track compliance
 
-Added as P11 in memory/principles.md
+Added as P11 in pwk/memory/principles.md
 ```
 
 ## Principle Templates

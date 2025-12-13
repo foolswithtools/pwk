@@ -11,8 +11,8 @@ You are conducting an end-of-day review that combines GitHub issue data with loc
 
 ### Step 1: Read Configuration
 
-Read `memory/github-config.md` for repository details.
-Read `memory/principles.md` for review preferences.
+Read `gpwk/memory/github-config.md` for repository details.
+Read `gpwk/memory/principles.md` for review preferences.
 
 ### Step 2: Determine Date and Mode
 
@@ -52,7 +52,7 @@ gh issue list \
 
 ### Step 4: Read Local Log
 
-Read `logs/YYYY-MM-DD.md` if it exists:
+Read `gpwk/logs/YYYY-MM-DD.md` if it exists:
 - Activity Stream entries
 - Blockers noted
 - Any manual notes
@@ -156,7 +156,7 @@ REFLECTION PROMPTS
 
 ### Step 7: Update Local Log
 
-Append reflections to `logs/YYYY-MM-DD.md`:
+Append reflections to `gpwk/logs/YYYY-MM-DD.md`:
 
 ```markdown
 ## End of Day Review

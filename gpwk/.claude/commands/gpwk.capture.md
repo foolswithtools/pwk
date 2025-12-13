@@ -11,7 +11,7 @@ You are capturing an activity or task to GitHub. Parse the input and create an a
 
 ### Step 1: Read Configuration
 
-Read `memory/github-config.md` to get:
+Read `gpwk/memory/github-config.md` to get:
 - Repository name and owner
 - Project number
 - Field IDs
@@ -83,7 +83,7 @@ gh project item-edit --project-id <project-number> --id $ITEM_ID --field-id <typ
 
 ### Step 5: Update Local Log (Hybrid)
 
-Also append to today's local log file `logs/YYYY-MM-DD.md`:
+Also append to today's local log file `gpwk/logs/YYYY-MM-DD.md`:
 
 ```markdown
 - HH:MM - Captured #<issue-number>: <title> [<type>]

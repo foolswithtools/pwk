@@ -11,8 +11,8 @@ Create a plan for today or the week based on carryover items, calendar, and prio
 
 1. **Gather inputs**:
    - Load carryover items from previous day(s)
-   - Check `work/` for active work items and their next tasks
-   - Load `memory/principles.md` for time-blocking preferences
+   - Check `pwk/work/` for active work items and their next tasks
+   - Load `pwk/memory/principles.md` for time-blocking preferences
    - Reference calendar commitments if mentioned
 
 2. **Prioritize**:
@@ -27,7 +27,7 @@ Create a plan for today or the week based on carryover items, calendar, and prio
    - Review/shutdown time
 
 4. **Create daily log**:
-   - Generate `logs/YYYY-MM-DD.md` from template
+   - Generate `pwk/logs/YYYY-MM-DD.md` from template
    - Populate Carryover section
    - Add Today's Plan section
    - Leave Activity Stream empty for capture
@@ -114,7 +114,7 @@ Create a plan for today or the week based on carryover items, calendar, and prio
 
 ## Integration with Principles
 
-References `memory/principles.md` for:
+References `pwk/memory/principles.md` for:
 - Deep work window preferences
 - Meeting-free time blocks
 - Maximum tasks per day

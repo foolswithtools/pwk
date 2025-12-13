@@ -12,7 +12,7 @@ Take complex work and break it down into actionable tasks. Creates a work item f
 1. **Assess the work**:
    - Is this a single-day task or multi-day effort?
    - Single-day: Add decomposed tasks directly to today's log
-   - Multi-day: Create a work item folder in `work/`
+   - Multi-day: Create a work item folder in `pwk/work/`
 
 2. **Gather context** (if complex):
    - What is the goal/outcome?
@@ -21,7 +21,7 @@ Take complex work and break it down into actionable tasks. Creates a work item f
    - What's the deadline?
 
 3. **Decompose using principles**:
-   - Load `memory/principles.md` for personal work style
+   - Load `pwk/memory/principles.md` for personal work style
    - Apply two-hour rule: no task should take >2 hours
    - Identify AI-delegatable sub-tasks
    - Mark dependencies between tasks
@@ -33,7 +33,7 @@ Take complex work and break it down into actionable tasks. Creates a work item f
    - Each task marked [P] or [AI]
 
 5. **Create artifacts**:
-   - For work items: `work/[name]/context.md`, `breakdown.md`, `progress.md`
+   - For work items: `pwk/pwk/work/[name]/context.md`, `breakdown.md`, `progress.md`
    - For simple breakdown: Add tasks to today's log
 
 ## Task Breakdown Format
@@ -77,7 +77,7 @@ Take complex work and break it down into actionable tasks. Creates a work item f
 ```
 /pwk.breakdown API v3 migration
 
-→ Created work item: work/api-v3-migration/
+→ Created work item: pwk/work/api-v3-migration/
   - context.md: Goals, stakeholders, deadline
   - breakdown.md: 15 tasks across 4 phases
   - progress.md: Empty, ready for updates
@@ -107,7 +107,7 @@ Created: [N] tasks
 - Estimated effort: [Z] hours
 
 Added to today's log: [First phase tasks]
-Work item folder: work/[name]/ (if multi-day)
+Work item folder: pwk/work/[name]/ (if multi-day)
 
 Next action: [T001] [Description]
 ```

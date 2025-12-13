@@ -13,14 +13,20 @@ PWK is built on **Activity-Driven Development (ADD)**:
 
 ## Installation
 
-1. Copy this directory into your project:
+1. **Copy PWK folder to your project:**
    ```bash
-   cp -r personalworkkit /path/to/your/project/
+   cp -r pwk /path/to/your/project/
    ```
 
-2. Open your project in VS Code with Claude Code extension
+2. **Copy commands to your project's .claude/commands/ directory:**
+   ```bash
+   mkdir -p /path/to/your/project/.claude/commands
+   cp pwk/.claude/commands/*.md /path/to/your/project/.claude/commands/
+   ```
 
-3. Start using slash commands (type `/pwk.` to see all commands)
+3. Open your project in VS Code with Claude Code extension
+
+4. Start using slash commands (type `/pwk.` to see all commands)
 
 ## Commands
 
@@ -53,15 +59,26 @@ Evening:
 
 ## Directory Structure
 
+After installation, your project will have:
+
 ```
-personalworkkit/
-├── .claude/commands/    # Slash command definitions
-├── memory/              # Personal principles and goals
-├── templates/           # Reusable markdown templates
-├── logs/                # Daily activity logs (gitignored)
-├── work/                # Multi-day work items (gitignored)
-├── inbox/               # Quick capture area
-└── pwk-context.md       # Comprehensive reference guide
+your-project/
+├── .claude/commands/       # Slash commands (at project root)
+│   ├── pwk.capture.md
+│   ├── pwk.log.md
+│   ├── pwk.plan.md
+│   ├── pwk.breakdown.md
+│   ├── pwk.carryover.md
+│   ├── pwk.review.md
+│   ├── pwk.delegate.md
+│   └── pwk.principles.md
+└── pwk/                    # PWK data directory
+    ├── memory/             # Personal principles and goals
+    ├── templates/          # Reusable markdown templates
+    ├── logs/               # Daily activity logs (gitignored)
+    ├── work/               # Multi-day work items (gitignored)
+    ├── inbox/              # Quick capture area
+    └── pwk-context.md      # Comprehensive reference guide
 ```
 
 ## Task Notation
@@ -80,7 +97,7 @@ personalworkkit/
 
 ## Customization
 
-Edit `memory/principles.md` to adjust:
+Edit `pwk/memory/principles.md` to adjust:
 - Deep work window duration
 - Daily task limits
 - Carryover thresholds

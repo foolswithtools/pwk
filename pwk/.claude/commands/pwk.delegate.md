@@ -12,7 +12,7 @@ Mark tasks for AI execution or execute AI-delegatable tasks.
 ### List Mode (default)
 1. **Scan for AI tasks**:
    - Check today's log for `[AI]` marked tasks
-   - Check `work/*/breakdown.md` for AI tasks
+   - Check `pwk/work/*/breakdown.md` for AI tasks
    - Check inbox for delegatable items
 
 2. **Display delegation queue**:
@@ -34,7 +34,7 @@ Mark tasks for AI execution or execute AI-delegatable tasks.
 
 ## Delegation Criteria
 
-Reference `memory/principles.md` for what to delegate:
+Reference `pwk/memory/principles.md` for what to delegate:
 
 **Good for AI delegation:**
 - Research tasks ("find out about X")
@@ -76,7 +76,7 @@ Reference `memory/principles.md` for what to delegate:
 
 ### Completed Today
 - [x] [T001] [AI] Research competitor pricing
-  Result: Summary saved to work/pricing-research/findings.md
+  Result: Summary saved to pwk/work/pricing-research/findings.md
 
 ---
 3 tasks ready | 1 in progress | 1 completed
@@ -135,12 +135,12 @@ Working...
 
 **Recommendation**: Vitest for new Vite projects, Jest for existing CRA projects.
 
-**Detailed findings saved to**: work/testing-research/comparison.md
+**Detailed findings saved to**: pwk/work/testing-research/comparison.md
 
 ---
 
 Task completed: [T005]
-Updated: logs/2024-01-15.md
+Updated: pwk/logs/2024-01-15.md
 
 Next AI task: [T008] Summarize Q4 metrics report
 Execute next? [Y/n]

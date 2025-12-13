@@ -11,8 +11,8 @@ You are triaging issues in the GitHub Project, moving them from Inbox to appropr
 
 ### Step 1: Read Configuration
 
-Read `memory/github-config.md` for project and field IDs.
-Read `memory/principles.md` for:
+Read `gpwk/memory/github-config.md` for project and field IDs.
+Read `gpwk/memory/principles.md` for:
 - Daily task limit
 - Preferred work balance
 

@@ -10,7 +10,7 @@ Review yesterday's incomplete items and carry them to today's log.
 ## Behavior
 
 1. **Load yesterday's log**:
-   - Find most recent `logs/YYYY-MM-DD.md` before today
+   - Find most recent `pwk/logs/YYYY-MM-DD.md` before today
    - Extract all incomplete tasks (unchecked `- [ ]`)
    - Note any blocked items `[W]`
 
@@ -97,7 +97,7 @@ To:   2024-01-15
 - [T005] waiting on design team - Day 2
 
 ---
-Today's log created: logs/2024-01-15.md
+Today's log created: pwk/logs/2024-01-15.md
 Run /pwk.plan to plan your day.
 ```
 

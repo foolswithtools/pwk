@@ -13,18 +13,24 @@ The `gh` CLI bridges Claude Code commands to your GitHub repository.
 
 ## Installation
 
-1. **Copy GPWK to your project:**
+1. **Copy GPWK folder to your project:**
    ```bash
    cp -r gpwk /path/to/your/project/
    ```
 
-2. **Ensure GitHub CLI is installed and authenticated:**
+2. **Copy commands to your project's .claude/commands/ directory:**
+   ```bash
+   mkdir -p /path/to/your/project/.claude/commands
+   cp gpwk/.claude/commands/*.md /path/to/your/project/.claude/commands/
+   ```
+
+3. **Ensure GitHub CLI is installed and authenticated:**
    ```bash
    gh auth status
    # If not authenticated: gh auth login
    ```
 
-3. **Run setup:**
+4. **Run setup:**
    ```
    /gpwk.setup
    # Or specify a custom repo:
@@ -141,9 +147,11 @@ Results are posted as comments on the issue.
 
 ## Directory Structure
 
+After installation, your project will have:
+
 ```
-gpwk/
-├── .claude/commands/     # Slash command definitions
+your-project/
+├── .claude/commands/           # Slash commands (at project root)
 │   ├── gpwk.setup.md
 │   ├── gpwk.capture.md
 │   ├── gpwk.plan.md
@@ -153,15 +161,16 @@ gpwk/
 │   ├── gpwk.review.md
 │   ├── gpwk.carryover.md
 │   └── gpwk.principles.md
-├── memory/
-│   ├── github-config.md  # GitHub project/field IDs
-│   ├── principles.md     # Your work preferences
-│   └── goals.md          # Long-term goals
-├── templates/
-│   ├── daily-log.md      # Local log template
-│   └── issue-body.md     # Issue templates
-├── logs/                 # Local daily logs (gitignored)
-└── README.md
+└── gpwk/                       # GPWK data directory
+    ├── memory/
+    │   ├── github-config.md    # GitHub project/field IDs
+    │   ├── principles.md       # Your work preferences
+    │   └── goals.md            # Long-term goals
+    ├── templates/
+    │   ├── daily-log.md        # Local log template
+    │   └── issue-body.md       # Issue templates
+    ├── logs/                   # Local daily logs (gitignored)
+    └── README.md
 ```
 
 ## Hybrid Approach Benefits
@@ -187,7 +196,7 @@ gpwk/
 
 ## Customization
 
-Edit `memory/principles.md` to adjust:
+Edit `gpwk/memory/principles.md` to adjust:
 - Daily task limits
 - Deep work preferences
 - Carryover thresholds

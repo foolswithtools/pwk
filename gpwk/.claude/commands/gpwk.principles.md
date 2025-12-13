@@ -7,11 +7,11 @@ View or edit your personal work principles that govern GPWK behavior.
 
 ## Instructions
 
-You are managing the user's work principles stored in `memory/principles.md`.
+You are managing the user's work principles stored in `gpwk/gpwk/memory/principles.md`.
 
 ### Step 1: Read Current Principles
 
-Read `memory/principles.md` to get current configuration.
+Read `gpwk/gpwk/memory/principles.md` to get current configuration.
 
 ### Step 2: Determine Action
 
@@ -110,7 +110,7 @@ Max per day (current: 2 blocks):
 
 ### Step 5: Save Changes
 
-If changes were made, update `memory/principles.md`:
+If changes were made, update `gpwk/gpwk/memory/principles.md`:
 
 ```bash
 # Use the Edit tool to update the file
@@ -123,7 +123,7 @@ Confirm:
 ```
 ✓ Principles Updated
 
-Changes saved to memory/principles.md
+Changes saved to gpwk/memory/principles.md
 
 Modified:
   • Deep Work minimum block: 2 hours → 90 minutes

@@ -11,7 +11,7 @@ You are breaking down complex work into manageable sub-issues. This creates a pa
 
 ### Step 1: Read Configuration
 
-Read `memory/github-config.md` for repository and project details.
+Read `gpwk/memory/github-config.md` for repository and project details.
 
 ### Step 2: Determine Source
 

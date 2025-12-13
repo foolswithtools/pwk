@@ -14,14 +14,16 @@ This repository contains two variants:
 ### PWK (Personal Work Kit)
 
 The original local-only system using markdown files:
-- Tasks stored in `logs/YYYY-MM-DD.md`
-- Work items in `work/[name]/` folders
+- Tasks stored in `pwk/logs/YYYY-MM-DD.md`
+- Work items in `pwk/work/[name]/` folders
 - Manual carryover between days
 - Fully offline capable
 
 ```bash
-# To use PWK, copy to your project:
+# To use PWK, copy folder and commands to your project:
 cp -r pwk /path/to/your/project/
+mkdir -p /path/to/your/project/.claude/commands
+cp pwk/.claude/commands/*.md /path/to/your/project/.claude/commands/
 ```
 
 [→ PWK Documentation](./pwk/README.md)
@@ -36,8 +38,10 @@ GitHub-integrated variant using Issues and Projects:
 - Access from any device via github.com
 
 ```bash
-# To use GPWK, copy to your project:
+# To use GPWK, copy folder and commands to your project:
 cp -r gpwk /path/to/your/project/
+mkdir -p /path/to/your/project/.claude/commands
+cp gpwk/.claude/commands/*.md /path/to/your/project/.claude/commands/
 
 # Then run setup:
 /gpwk.setup

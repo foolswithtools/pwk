@@ -10,7 +10,7 @@ View today's activity log, see patterns, and manage entries.
 ## Behavior
 
 1. **Load the log**:
-   - Default: today's log (`logs/YYYY-MM-DD.md`)
+   - Default: today's log (`pwk/logs/YYYY-MM-DD.md`)
    - If date provided: load that specific date
    - If log doesn't exist: offer to create from template
 

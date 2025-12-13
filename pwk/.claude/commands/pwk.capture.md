@@ -15,8 +15,8 @@ Quickly capture an activity, thought, task, or note into today's log or inbox.
    - If activity is a time entry → add to Activity Stream with timestamp
 
 2. **Check for today's log**:
-   - Look for `logs/YYYY-MM-DD.md` (today's date)
-   - If it doesn't exist, create from `templates/daily-log.md`
+   - Look for `pwk/logs/YYYY-MM-DD.md` (today's date)
+   - If it doesn't exist, create from `pwk/templates/daily-log.md`
 
 3. **Parse the input**:
    - Starts with "working on" / "started" / "doing" → Activity Stream entry
@@ -57,13 +57,13 @@ Quickly capture an activity, thought, task, or note into today's log or inbox.
 **Quick thought:**
 ```
 /pwk.capture idea: maybe we should refactor the auth module
-→ Adds to inbox/quick-capture.md with timestamp
+→ Adds to pwk/inbox/quick-capture.md with timestamp
 ```
 
 ## Output Format
 
 ```
-Captured to [logs/2024-01-15.md | inbox/quick-capture.md]:
+Captured to [pwk/logs/2024-01-15.md | pwk/inbox/quick-capture.md]:
 
 [The formatted entry]
 

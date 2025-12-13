@@ -11,7 +11,7 @@ You are processing end-of-day carryover, updating labels to track how many days 
 
 ### Step 1: Read Configuration
 
-Read `memory/github-config.md` for repository details.
+Read `gpwk/memory/github-config.md` for repository details.
 
 ### Step 2: Identify Carryover Candidates
 
@@ -132,7 +132,7 @@ Record carryover metrics for trend analysis:
 # Track: date, count of c1/c2/c3, issues by ID
 ```
 
-Update local log `logs/YYYY-MM-DD.md`:
+Update local log `gpwk/logs/YYYY-MM-DD.md`:
 
 ```markdown
 ## Carryover Applied
@@ -170,7 +170,7 @@ Applied:
            - Close as won't-do
            - Reassign or delegate
 
-Metrics updated in logs/YYYY-MM-DD.md
+Metrics updated in gpwk/logs/YYYY-MM-DD.md
 
 Tomorrow's starting point:
   • 4 carryover items

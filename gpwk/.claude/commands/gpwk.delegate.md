@@ -11,8 +11,8 @@ You are managing and executing AI-delegatable tasks. These are issues labeled `p
 
 ### Step 1: Read Configuration
 
-Read `memory/github-config.md` for repository details.
-Read `memory/principles.md` for delegation criteria.
+Read `gpwk/memory/github-config.md` for repository details.
+Read `gpwk/memory/principles.md` for delegation criteria.
 
 ### Step 2: Parse Arguments
 
@@ -69,7 +69,7 @@ Extract:
 
 #### 4b. Validate Delegation
 
-Check against principles in `memory/principles.md`:
+Check against principles in `gpwk/memory/principles.md`:
 
 **Safe to delegate:**
 - Research and information gathering
