@@ -30,7 +30,21 @@ The `gh` CLI bridges Claude Code commands to your GitHub repository.
    # If not authenticated: gh auth login
    ```
 
-4. **Run setup:**
+4. **Install Python dependencies:**
+   ```bash
+   cd /path/to/your/project/gpwk/lib/python
+   pip install -e .
+   ```
+
+   Or use a virtual environment (recommended):
+   ```bash
+   cd /path/to/your/project/gpwk/lib/python
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -e .
+   ```
+
+5. **Run setup:**
    ```
    /gpwk.setup
    # Or specify a custom repo:
@@ -42,7 +56,7 @@ The `gh` CLI bridges Claude Code commands to your GitHub repository.
    - A GitHub Project with status columns
    - Labels for task types, priority, energy, and carryover
 
-4. **Customize your principles:**
+6. **Customize your principles (optional):**
    ```
    /gpwk.principles --edit
    ```
