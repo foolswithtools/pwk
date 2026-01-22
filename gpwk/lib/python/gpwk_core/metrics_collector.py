@@ -152,26 +152,29 @@ class MetricsCollector:
     def _collect_github_metrics(self):
         """Query GitHub for actual issue state and update metric values."""
 
+        # Parse owner and repo from config (format: "owner/repo")
+        owner, repo = self.config.github_repo.split("/", 1)
+
         # Query GitHub GraphQL API for all issues
-        query = """
-        query {
-          repository(owner: "clostaunau", name: "personal-work") {
-            issues(first: 100, states: [OPEN, CLOSED], orderBy: {field: UPDATED_AT, direction: DESC}) {
-              nodes {
+        query = f"""
+        query {{
+          repository(owner: "{owner}", name: "{repo}") {{
+            issues(first: 100, states: [OPEN, CLOSED], orderBy: {{field: UPDATED_AT, direction: DESC}}) {{
+              nodes {{
                 number
                 title
                 state
                 createdAt
                 closedAt
-                labels(first: 20) {
-                  nodes {
+                labels(first: 20) {{
+                  nodes {{
                     name
-                  }
-                }
-              }
-            }
-          }
-        }
+                  }}
+                }}
+              }}
+            }}
+          }}
+        }}
         """
 
         result = subprocess.run(

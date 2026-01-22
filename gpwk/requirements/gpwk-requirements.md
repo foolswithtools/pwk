@@ -600,7 +600,7 @@ GPWK is a Claude Code-integrated productivity system that uses GitHub as the bac
 **Description**: System shall create GitHub repository if it doesn't exist.
 
 **Acceptance Criteria**:
-- Repository name defaults to "personal-work" or uses user-provided name
+- Repository name defaults to "my-work" or uses user-provided name
 - Repository is private by default
 - Repository is created in authenticated user's account
 - If repository exists, setup continues without error

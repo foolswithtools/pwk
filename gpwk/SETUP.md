@@ -9,6 +9,17 @@ This guide will help you set up the Python-based GPWK implementation with OpenTe
 - Grafana Alloy installed on your machine
 - GitHub CLI (`gh`) authenticated
 
+## ⚠️ Security Warning
+
+This setup process will create local configuration files containing GitHub project IDs and may involve Grafana Cloud credentials. **Important security practices:**
+
+- **NEVER commit `gpwk/config/alloy/.env`** - This file contains real API keys and credentials
+- The `.env` file is protected by `.gitignore` - verify it's ignored before committing
+- **Always use `.env.example` as a template** when creating your `.env` file
+- GitHub project IDs in `gpwk/memory/github-config.md` are safe to commit (they don't contain credentials)
+- Use `gh auth login` for GitHub authentication (no tokens needed in files)
+- Keep all API keys and tokens in environment variables, never hardcoded
+
 ## Step 1: Install Python Dependencies
 
 ```bash

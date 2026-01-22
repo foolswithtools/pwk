@@ -55,7 +55,7 @@ GRAFANA_CLOUD_OTLP_USERNAME=123456  # From Connections → OpenTelemetry
 
 # Prometheus Configuration (for Alloy meta-monitoring)
 GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-prod-01-us-east-0.grafana.net/api/prom/push
-GRAFANA_CLOUD_PROMETHEUS_USERNAME=2731165  # From Prometheus → Details
+GRAFANA_CLOUD_PROMETHEUS_USERNAME=123456  # From Prometheus → Details
 
 # API Key (shared by both)
 GRAFANA_CLOUD_API_KEY=glc_eyJrIjoiYWJjZGVm...  # Your actual token
@@ -97,7 +97,7 @@ You should see all components showing **"healthy"**:
 
 ```bash
 # Go back to repository root
-cd /Users/clo/developer/gh-clostaunau/personal-work
+cd /path/to/your/repo
 
 # Test 1: Simple capture
 /gpwk.capture "Testing Docker Alloy setup with telemetry"
@@ -106,7 +106,7 @@ cd /Users/clo/developer/gh-clostaunau/personal-work
 Expected output:
 ```
 ✓ Captured: Testing Docker Alloy setup with telemetry
-  Issue: #46 (https://github.com/clostaunau/personal-work/issues/46)
+  Issue: #46 (https://github.com/OWNER/REPO/issues/46)
   Duration: XXXms
 
   Run /gpwk.triage to move to Today/This Week

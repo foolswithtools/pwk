@@ -216,7 +216,7 @@ Current GPWK commands are implemented as individual slash commands that execute 
 gpwk_load_config() {
     # Parse gpwk/memory/github-config.md
     # Export environment variables
-    export GPWK_REPO="clostaunau/personal-work"
+    export GPWK_REPO="OWNER/REPO"
     export GPWK_PROJECT="1"
     export GPWK_PROJECT_ID="PVT_..."
     # ... etc

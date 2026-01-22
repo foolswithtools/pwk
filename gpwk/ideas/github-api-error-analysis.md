@@ -7,7 +7,7 @@
 
 ### 1. Shell Parse Error with Parentheses in Issue Title
 ```bash
-ITEM_ID=$(gh project item-list 1 --owner @me --format json | jq -r '.items[] | select(.content.url == "https://github.com/clostaunau/personal-work/issues/45") | .id')
+ITEM_ID=$(gh project item-list 1 --owner @me --format json | jq -r '.items[] | select(.content.url == "https://github.com/OWNER/REPO/issues/45") | .id')
 ```
 **Error**: `(eval):1: parse error near '('`
 

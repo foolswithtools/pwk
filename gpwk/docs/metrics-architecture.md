@@ -139,8 +139,8 @@ Every interval (60s by default):
 
 ```
 Starting GPWK metrics collector (interval: 60s)
-Querying: clostaunau/personal-work
-Logs: /Users/clo/developer/gh-clostaunau/personal-work/gpwk/logs
+Querying: OWNER/REPO
+Logs: /path/to/repo/gpwk/logs
 Press Ctrl+C to stop
 
 [info] github_metrics_collected open_issues=17 created_today=3 closed_today=2

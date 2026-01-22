@@ -38,7 +38,7 @@ The `gh` CLI bridges Claude Code commands to your GitHub repository.
    ```
 
    This creates:
-   - A `personal-work` repository (or uses existing)
+   - A `my-work` repository (or uses existing/specified repo)
    - A GitHub Project with status columns
    - Labels for task types, priority, energy, and carryover
 
@@ -202,6 +202,22 @@ Edit `gpwk/memory/principles.md` to adjust:
 - Carryover thresholds
 - Delegation criteria
 - Energy matching rules
+
+## Security Notes
+
+**Important**: GPWK uses configuration files and environment variables that may contain sensitive information. Follow these security best practices:
+
+- **Never commit `.env` files** with real credentials
+- **Always use `.env.example`** as a template for configuration
+- **Use `gh auth login`** for GitHub authentication (no hardcoded tokens required)
+- **Configuration files** (`gpwk/memory/github-config.md`) contain project IDs which are safe to commit
+- **Grafana credentials** should only be in `gpwk/config/alloy/.env` (protected by `.gitignore`)
+- **Review `.gitignore`** to ensure sensitive files are excluded before committing
+
+If using Grafana Alloy for observability:
+- Keep API keys in environment variables or `.env` files (never committed)
+- The `.env` file is protected by `.gitignore` and should never be tracked in git
+- Always verify `.env` is not staged: `git check-ignore gpwk/config/alloy/.env`
 
 ## Comparison with PWK
 

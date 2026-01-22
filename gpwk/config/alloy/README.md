@@ -2,6 +2,23 @@
 
 Run Grafana Alloy in Docker to collect OpenTelemetry signals from GPWK and forward them to Grafana Cloud.
 
+---
+
+## ⚠️ SECURITY WARNING
+
+The `.env` file in this directory contains **real credentials** and should **NEVER be committed to git**.
+
+**Critical Security Requirements:**
+- ✅ The `.env` file is protected by `.gitignore`
+- ✅ Always use `.env.example` as your template
+- ❌ **NEVER** commit the `.env` file
+- ❌ **NEVER** share your `.env` file or API keys
+- ✅ Verify before committing: `git check-ignore .env` should return `.env`
+
+**Before you start:** Ensure you understand that API keys are sensitive credentials that grant access to your Grafana Cloud data and should be treated like passwords.
+
+---
+
 ## Quick Start
 
 ### 1. Get Grafana Cloud Credentials
@@ -51,7 +68,7 @@ GRAFANA_CLOUD_OTLP_USERNAME=123456  # From Connections → OpenTelemetry
 
 # Prometheus Configuration (for Alloy meta-monitoring)
 GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-prod-01-us-east-0.grafana.net/api/prom/push
-GRAFANA_CLOUD_PROMETHEUS_USERNAME=2731165  # From Prometheus → Details
+GRAFANA_CLOUD_PROMETHEUS_USERNAME=123456  # From Prometheus → Details
 
 # API Key (shared by both)
 GRAFANA_CLOUD_API_KEY=glc_eyJrIjoiYWJjZGVm...

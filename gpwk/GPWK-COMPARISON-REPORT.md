@@ -3,7 +3,7 @@
 
 **Date**: 2026-01-21
 **Original Repository**: ~/developer/foolswithtools/pwk/
-**Updated Repository**: ~/developer/gh-clostaunau/personal-work/
+**Updated Repository**: [Migrated from enhanced GPWK installation]
 
 ---
 

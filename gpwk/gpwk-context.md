@@ -47,7 +47,7 @@ gpwk/
 
 ### Repository
 
-Default: `personal-work` (private repository)
+Default: `my-work` (private repository)
 - Contains: Nothing but issues and project
 - Can be customized via `/gpwk.setup [repo-name]`
 
@@ -139,7 +139,7 @@ status:ai-complete # AI work done, needs review
 ### One-Time Setup
 ```
 /gpwk.setup
-# Creates: personal-work repo, project, labels, fields
+# Creates: my-work repo, project, labels, fields
 # Saves: Project IDs to memory/github-config.md
 ```
 
