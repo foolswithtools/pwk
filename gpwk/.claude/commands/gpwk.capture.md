@@ -1,136 +1,130 @@
 # GPWK Capture
 
-Quick capture of activities, tasks, or thoughts to GitHub Issues.
+Quick capture of activities, tasks, or thoughts to GitHub Issues with full telemetry.
 
 ## Arguments
 - `$ARGUMENTS` - The activity or task to capture
 
 ## Instructions
 
-You are capturing an activity or task to GitHub. Parse the input and create an appropriate issue.
+**IMPORTANT**: This command now uses the Python backend with OpenTelemetry instrumentation.
 
-### Step 1: Read Configuration
+### How It Works
 
-Read `gpwk/memory/github-config.md` to get:
-- Repository name and owner
-- Project number
-- Field IDs
+Simply call the Python executable with the capture text. The Python backend handles:
+- ✅ Parsing GPWK notation ([AI], [P], !high, ~deep, etc.)
+- ✅ Completion detection (past tense, time ranges)
+- ✅ GitHub issue creation (no shell escaping issues!)
+- ✅ Project field management with retry logic
+- ✅ Daily log updates
+- ✅ Full OpenTelemetry instrumentation (traces, metrics, logs)
 
-If not configured, prompt user to run `/gpwk.setup` first.
-
-### Step 2: Parse Input
-
-Parse `$ARGUMENTS` to extract:
-
-1. **Task type** (from brackets):
-   - `[AI]` → label `pwk:ai`, Type field = `ai-task`
-   - `[P]` → label `pwk:personal`, Type field = `task`
-   - No bracket → label `pwk:capture`, Type field = `capture`
-
-2. **Priority** (from keywords):
-   - `!high` or `!urgent` → label `priority:high`, Priority field = `high`
-   - `!medium` → label `priority:medium`, Priority field = `medium`
-   - `!low` → label `priority:low`, Priority field = `low`
-
-3. **Energy** (from keywords):
-   - `~deep` → label `energy:deep`, Energy field = `deep`
-   - `~shallow` → label `energy:shallow`, Energy field = `shallow`
-   - `~quick` → label `energy:quick`, Energy field = `quick`
-
-4. **Title**: Everything else after removing type/priority/energy markers
-
-### Step 3: Create Issue
+### Execute Command
 
 ```bash
-gh issue create \
-  --repo <owner>/<repo> \
-  --title "<parsed-title>" \
-  --label "<labels>" \
-  --body "$(cat <<'EOF'
-## Captured
-- **Date**: <current-date-time>
-- **Source**: GPWK Capture
+# Get the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GPWK_ROOT="$SCRIPT_DIR/../.."
 
-## Context
-<any additional context parsed from input>
-
-## Notes
-(Add notes as you work on this)
-EOF
-)"
+# Call Python backend
+"$GPWK_ROOT/bin/gpwk-capture" "$ARGUMENTS"
 ```
 
-### Step 4: Add to Project
+That's it! The Python backend handles everything automatically.
 
-Get the issue URL/number from the create output, then add to project:
+## Notation Reference
 
-```bash
-# Add issue to project
-gh project item-add <project-number> --owner @me --url <issue-url>
+### Task Type
+- `[AI]` → AI-delegatable task (label: `pwk:ai`, Type: `ai-task`)
+- `[P]` → Personal/human-only task (label: `pwk:personal`, Type: `task`)
+- No bracket → Quick capture needing triage (label: `pwk:capture`, Type: `capture`)
 
-# Get the item ID
-ITEM_ID=$(gh project item-list <project-number> --owner @me --format json | jq -r '.items[] | select(.content.url == "<issue-url>") | .id')
+### Priority
+- `!high` or `!urgent` → High priority
+- `!medium` → Medium priority
+- `!low` → Low priority
 
-# Set Status to Inbox
-gh project item-edit --project-id <project-number> --id $ITEM_ID --field-id <status-field-id> --single-select-option-id <inbox-option-id>
+### Energy
+- `~deep` → Requires deep focus
+- `~shallow` → Shallow work, low cognitive load
+- `~quick` → Quick win, under 15 minutes
 
-# Set Type field
-gh project item-edit --project-id <project-number> --id $ITEM_ID --field-id <type-field-id> --single-select-option-id <type-option-id>
+### Completion Detection (Automatic)
+The Python backend automatically detects completed activities:
+- **Past tense verbs**: "I took...", "completed...", "finished..."
+- **Time ranges**: "between 9-10 AM", "from 2-3 PM"
+- **Explicit markers**: "this is complete", "done"
 
-# Set Priority if specified
-# Set Energy if specified
-```
-
-### Step 5: Update Local Log (Hybrid)
-
-Also append to today's local log file `gpwk/logs/YYYY-MM-DD.md`:
-
-```markdown
-- HH:MM - Captured #<issue-number>: <title> [<type>]
-```
-
-If the log file doesn't exist, create it from template first.
-
-### Step 6: Confirm
-
-Display confirmation:
-
-```
-✓ Captured: <title>
-  Issue: #<number> (<url>)
-  Labels: <labels>
-  Status: Inbox
-
-  Run /gpwk.triage to move to Today/This Week
-```
+Completed activities are automatically closed and marked as done.
 
 ## Examples
 
-**Input**: `research best practices for API rate limiting [AI]`
-**Result**:
-- Issue: "research best practices for API rate limiting"
-- Labels: `pwk:ai`
-- Type: `ai-task`
-- Status: Inbox
+**Simple capture:**
+```bash
+/gpwk.capture "remember to call John about project timeline"
+```
+Result: Issue created with `pwk:capture` label, Status: Inbox
 
-**Input**: `fix login bug !high ~deep [P]`
-**Result**:
-- Issue: "fix login bug"
-- Labels: `pwk:personal`, `priority:high`, `energy:deep`
-- Type: `task`
-- Priority: high
-- Energy: deep
+**AI task with priority and energy:**
+```bash
+/gpwk.capture "research best practices for API rate limiting [AI] !high ~deep"
+```
+Result: Issue with `pwk:ai`, `priority:high`, `energy:deep`, Type: ai-task
 
-**Input**: `remember to call John about project timeline`
-**Result**:
-- Issue: "remember to call John about project timeline"
-- Labels: `pwk:capture`
-- Type: `capture`
-- Status: Inbox
+**Personal task:**
+```bash
+/gpwk.capture "fix login bug !high ~deep [P]"
+```
+Result: Issue with `pwk:personal`, `priority:high`, `energy:deep`, Type: task
 
-## Error Handling
+**Completed activity (auto-detected):**
+```bash
+/gpwk.capture "I took Mr. Noodles for a walk between 9-10 AM"
+```
+Result: Issue created, automatically closed, Status: Done, added to Activity Stream
 
-- If gh CLI not authenticated: Prompt for `gh auth login`
-- If repo not found: Suggest running `/gpwk.setup`
-- If project not found: Suggest running `/gpwk.setup`
-- On success: Always show issue number and URL
+**Special characters (no escaping needed!):**
+```bash
+/gpwk.capture "Test with (parentheses) and 'quotes' works!"
+```
+Result: Works perfectly - Python backend handles all special characters
+
+## Features
+
+### Python Backend Benefits
+- **No shell escaping issues**: Handles parentheses, quotes, special characters
+- **Automatic retry logic**: Fixes GitHub API timing issues
+- **Completion detection**: Past tense and time ranges detected automatically
+- **Full telemetry**: Every operation instrumented with OpenTelemetry
+
+### Telemetry Collected
+- **Traces**: See complete operation flow in Grafana Tempo
+- **Metrics**: Capture count, duration, error rate
+- **Logs**: Structured logs in Grafana Loki
+- **Attributes**: Type, priority, energy, completion status, duration
+
+### Performance
+Typical operation: ~500-700ms
+- Parse: ~10-20ms
+- Create issue: ~200-300ms
+- Add to project: ~50-100ms (+ retries if needed)
+- Set fields: ~150-200ms
+- Update log: ~50ms
+
+## Troubleshooting
+
+**Error: Virtual environment not found**
+```bash
+cd gpwk/lib/python
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**Error: Configuration not found**
+Run `/gpwk.setup` first to create GitHub configuration.
+
+**View telemetry:**
+- Traces: Grafana Tempo (search for `gpwk_capture`)
+- Metrics: Grafana Prometheus (`gpwk.capture.*`)
+- Logs: Grafana Loki (label: `service_name="gpwk"`)
