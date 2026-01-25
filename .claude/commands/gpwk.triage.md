@@ -22,12 +22,8 @@ Simply call the Python executable for an interactive triage session. The Python 
 ### Execute Command
 
 ```bash
-# Get the script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GPWK_ROOT="$SCRIPT_DIR/../.."
-
-# Call Python backend
-"$GPWK_ROOT/bin/gpwk-triage"
+# Call Python backend from workspace root
+gpwk/bin/gpwk-triage
 ```
 
 That's it! The Python backend provides an interactive triage interface.

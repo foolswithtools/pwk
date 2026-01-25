@@ -22,12 +22,8 @@ Simply call the Python executable for an end-of-day review. The Python backend h
 ### Execute Command
 
 ```bash
-# Get the script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GPWK_ROOT="$SCRIPT_DIR/../.."
-
-# Call Python backend
-"$GPWK_ROOT/bin/gpwk-review"
+# Call Python backend from workspace root
+gpwk/bin/gpwk-review
 ```
 
 That's it! The Python backend guides you through an interactive review.

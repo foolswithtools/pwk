@@ -22,12 +22,8 @@ Simply call the Python executable with the capture text. The Python backend hand
 ### Execute Command
 
 ```bash
-# Get the script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GPWK_ROOT="$SCRIPT_DIR/../.."
-
-# Call Python backend
-"$GPWK_ROOT/bin/gpwk-capture" "$ARGUMENTS"
+# Call Python backend from workspace root
+gpwk/bin/gpwk-capture "$ARGUMENTS"
 ```
 
 That's it! The Python backend handles everything automatically.
@@ -88,6 +84,20 @@ Result: Issue created, automatically closed, Status: Done, added to Activity Str
 /gpwk.capture "Test with (parentheses) and 'quotes' works!"
 ```
 Result: Works perfectly - Python backend handles all special characters
+
+**Knowledge capture task:**
+```bash
+/gpwk.capture "Research GraphQL federation patterns and best practices [AI]"
+# Then add pwk:knowledge label to trigger automated research workflow
+gh issue edit {ISSUE_NUMBER} --add-label "pwk:knowledge"
+```
+Result: Issue with `pwk:ai` label created. When `pwk:knowledge` label is added, the GPWK Knowledge Capture workflow automatically:
+- Performs internet research using WebSearch/WebFetch
+- Creates comprehensive documentation in `knowledge/{topic}/`
+- Generates README.md, technical-reference.md, and sources.md
+- Commits directly to repository
+- Posts results back to issue
+- Adds `status:ai-complete` label
 
 ## Features
 

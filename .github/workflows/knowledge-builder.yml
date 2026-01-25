@@ -1,0 +1,121 @@
+name: Knowledge Builder
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_directory:
+        description: 'Specific knowledge subdirectory to process (e.g., "grafana"). Leave empty to process all.'
+        required: false
+        type: string
+
+jobs:
+  build-knowledge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Find 411.md files
+        id: find-files
+        run: |
+          if [ -n "${{ inputs.target_directory }}" ]; then
+            # Process specific directory
+            FILES=$(find knowledge/${{ inputs.target_directory }} -name "411.md" -type f 2>/dev/null || echo "")
+          else
+            # Process all directories
+            FILES=$(find knowledge -mindepth 2 -maxdepth 2 -name "411.md" -type f)
+          fi
+
+          if [ -z "$FILES" ]; then
+            echo "No 411.md files found"
+            echo "files=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Convert to JSON array for matrix
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" | jq -R -s -c 'split("\n") | map(select(length > 0))' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Process each 411.md file
+        if: steps.find-files.outputs.files != '[]' && steps.find-files.outputs.files != ''
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are a domain expert and technical documentation specialist.
+
+            TASK: Process knowledge base 411.md files and create comprehensive documentation
+
+            INSTRUCTIONS:
+            1. Find all 411.md files in the knowledge/ directory using: find knowledge -name "411.md" -type f
+
+            2. For EACH 411.md file found:
+               a. Read the file to extract the URL(s) listed under the "# URL" section
+               b. For each URL, determine the content type and process accordingly:
+                  - **PDF URLs** (ending in .pdf):
+                    1. Create a temporary directory: mkdir -p /tmp/pdfs
+                    2. Download the PDF: curl -L -o /tmp/pdfs/document.pdf "{URL}"
+                    3. Use the Read tool to process the downloaded PDF file
+                    4. Extract and analyze the PDF content
+                  - **HTML URLs** (all other URLs):
+                    1. Use WebFetch to retrieve and analyze the content from the URL
+               c. Combine information from all sources (PDFs and HTML pages)
+               d. Become a domain expert in that specific topic
+               e. Create TWO documentation files in the SAME directory as the 411.md file:
+
+                  **human-guide.md** - For human readers:
+                  - Written in clear, accessible language
+                  - Include: Overview, Key Concepts, Common Use Cases, Getting Started guide
+                  - Use examples, analogies, and practical explanations
+                  - Structure with clear headings and progressive complexity
+                  - Include best practices and common pitfalls
+
+                  **ai-context.md** - For AI/LLM consumption:
+                  - Structured, dense technical reference
+                  - Include: Formal definitions, API signatures, configuration schemas
+                  - Technical specifications, architecture patterns, data models
+                  - Code examples and snippets
+                  - Relationships to related technologies
+                  - Optimized for semantic search and retrieval
+
+            EXAMPLE STRUCTURE:
+            ```
+            knowledge/
+              grafana/
+                411.md (already exists - DO NOT MODIFY)
+                human-guide.md (CREATE THIS)
+                ai-context.md (CREATE THIS)
+            ```
+
+            IMPORTANT:
+            - Do NOT modify the original 411.md files
+            - Use WebFetch for HTML URLs and Read tool for downloaded PDFs
+            - Download PDFs to /tmp/pdfs/ directory before reading them
+            - Create comprehensive, accurate documentation combining all sources
+            - Use the Write tool to save the files (DO NOT commit them - the workflow will handle that)
+            - Process ALL 411.md files found in the knowledge directory
+
+          claude_args: '--allowed-tools "Read,Write,WebFetch,Bash"'
+
+      - name: Create Pull Request
+        if: steps.find-files.outputs.files != '[]' && steps.find-files.outputs.files != ''
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: Build knowledge base documentation
+          title: Knowledge Base Documentation Update
+          body: |
+            Automated documentation generated from 411.md files by Claude Code Knowledge Builder.
+
+            This PR contains AI-generated documentation based on the URLs listed in `411.md` files.
+          branch: knowledge-builder-${{ github.run_number }}
+          delete-branch: true
+          add-paths: |
+            knowledge/

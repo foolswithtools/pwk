@@ -1,0 +1,378 @@
+name: GPWK Knowledge Capture
+
+on:
+  # Trigger when issues are labeled with pwk:ai AND pwk:knowledge
+  issues:
+    types: [labeled]
+
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to process'
+        required: true
+        type: number
+
+jobs:
+  capture-knowledge:
+    # Only run when pwk:knowledge label is specifically added (and pwk:ai is present)
+    # OR when manually triggered via workflow_dispatch
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'pwk:knowledge' &&
+       contains(github.event.issue.labels.*.name, 'pwk:ai'))
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GPWK_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'gpwk/lib/python/requirements.txt'
+
+      - name: Install GPWK Python dependencies
+        run: |
+          cd gpwk/lib/python
+          python3 -m venv venv
+          venv/bin/pip install --upgrade pip
+          venv/bin/pip install -r requirements.txt
+          echo "✅ GPWK Python environment ready"
+
+      - name: Configure GPWK environment
+        run: |
+          chmod +x gpwk/bin/gpwk-*
+          echo "${{ github.workspace }}/gpwk/bin" >> $GITHUB_PATH
+          echo "✅ GPWK scripts configured"
+
+      - name: Configure git
+        run: |
+          git config user.name "GPWK Knowledge Bot"
+          git config user.email "gpwk-knowledge-bot@users.noreply.github.com"
+
+      - name: Get issue number
+        id: issue
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "number=${{ inputs.issue_number }}" >> $GITHUB_OUTPUT
+          else
+            echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Execute AI Knowledge Capture
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GPWK_PAT || secrets.GITHUB_TOKEN }}
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT || vars.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS || vars.OTEL_EXPORTER_OTLP_HEADERS }}
+          OTEL_SERVICE_NAME: "gpwk-knowledge-capture"
+          OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=github-actions,service.namespace=gpwk"
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GPWK_PAT || secrets.GITHUB_TOKEN }}
+          show_full_output: true
+
+          prompt: |
+            ## GPWK KNOWLEDGE CAPTURE TASK
+
+            **CONTEXT**:
+            - Repository: ${{ github.repository }}
+            - Issue: #${{ steps.issue.outputs.number }}
+            - You are executing an AI-delegatable knowledge capture task
+
+            **YOUR MISSION**:
+            You are a research specialist and technical documentation expert. Your task is to:
+            1. Research a topic using internet sources
+            2. Create comprehensive documentation
+            3. Commit the documentation to the repository
+            4. Report results back to the issue
+
+            ---
+
+            ## EXECUTION STEPS
+
+            ### Step 1: Read the Issue
+            Use `gh issue view ${{ steps.issue.outputs.number }} --repo ${{ github.repository }}` to read the issue.
+
+            The issue should contain:
+            - **Research Topic**: The subject you need to research
+            - **Optional Details**: Specific aspects to focus on, questions to answer, or sources to consult
+
+            Parse the issue to extract:
+            - The main topic name (this will be the subdirectory name)
+            - Research requirements and scope
+            - Any specific questions or areas of focus
+
+            ### Step 2: Determine Knowledge Directory Name
+            From the topic, create a clean directory name:
+            - Use lowercase
+            - Replace spaces with hyphens
+            - Remove special characters
+            - Example: "Microservices API Design" → "microservices-api-design"
+
+            ### Step 3: Perform Internet Research
+            Use WebSearch and/or WebFetch tools to research the topic comprehensively:
+            - Search for authoritative sources, documentation, tutorials
+            - Gather information from multiple perspectives
+            - Focus on: definitions, best practices, common patterns, use cases, examples
+            - Look for official documentation, technical blogs, academic papers
+
+            **For PDF URLs**:
+            - If you find PDF documentation, download it first:
+              1. Create temp directory: mkdir -p /tmp/pdfs
+              2. Download: curl -L -o /tmp/pdfs/document.pdf "{URL}"
+              3. Use Read tool to process the PDF content
+            - For HTML URLs, use WebFetch as normal
+
+            ### Step 4: Create Knowledge Directory Structure
+            Create: `knowledge/{topic-name}/`
+
+            In this directory, create THREE files:
+
+            **README.md** - Overview and guide for humans:
+            ```markdown
+            # {Topic Name}
+
+            ## Overview
+            [Clear introduction to the topic]
+
+            ## Key Concepts
+            [Main concepts explained clearly]
+
+            ## Use Cases
+            [When and why to use this]
+
+            ## Getting Started
+            [Practical guide to begin using/implementing]
+
+            ## Best Practices
+            [Recommended approaches and patterns]
+
+            ## Common Pitfalls
+            [Things to avoid]
+
+            ## Resources
+            - [Link to sources used]
+            ```
+
+            **technical-reference.md** - Dense technical documentation for AI/LLM:
+            ```markdown
+            # {Topic Name} - Technical Reference
+
+            ## Formal Definition
+            [Precise technical definition]
+
+            ## Architecture & Components
+            [System architecture, components, relationships]
+
+            ## Specifications
+            [Technical specs, APIs, schemas, protocols]
+
+            ## Implementation Patterns
+            [Code patterns, examples, configurations]
+
+            ## Integration & Interoperability
+            [How it integrates with other systems]
+
+            ## Performance & Scalability
+            [Performance characteristics, scaling patterns]
+
+            ## Security Considerations
+            [Security patterns, vulnerabilities, mitigations]
+            ```
+
+            **sources.md** - Research sources and metadata:
+            ```markdown
+            # Research Sources
+
+            ## URLs Consulted
+            - [URL 1]: [Description]
+            - [URL 2]: [Description]
+
+            ## Research Date
+            {Current date}
+
+            ## Research Scope
+            {What was researched}
+
+            ## Key Findings
+            {Summary of main discoveries}
+            ```
+
+            ### Step 5: Prepare Documentation for Review
+            ```bash
+            # Add all files in the new knowledge directory
+            git add knowledge/{topic-name}/
+
+            # Create descriptive commit message
+            git commit -m "docs: Add knowledge base documentation for {topic-name}
+
+            - Research and documentation for {topic-name}
+            - Created README.md for human readers
+            - Created technical-reference.md for AI/LLM context
+            - Documented research sources and findings
+
+            AI-Generated via GPWK Knowledge Capture
+            Issue: #${{ steps.issue.outputs.number }}
+
+            Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+
+            # Note: Changes will be automatically pushed and a PR created by the workflow
+            ```
+
+            ### Step 6: Post Results to Issue
+            Use the GPWK Python backend to post results:
+
+            ```bash
+            # Get the commit SHA for reference
+            COMMIT_SHA=$(git rev-parse HEAD)
+
+            # Create a comprehensive result report
+            RESULT=$(cat <<'EOF'
+            ## 🤖 AI Knowledge Capture - Research Complete
+
+            **Topic**: {topic-name}
+
+            **Research Summary**:
+            {Brief summary of what was researched and documented}
+
+            **Documentation Created**:
+            - `knowledge/{topic-name}/README.md` - Human-readable guide
+            - `knowledge/{topic-name}/technical-reference.md` - Technical reference for AI/LLM
+            - `knowledge/{topic-name}/sources.md` - Research sources and metadata
+
+            **Key Findings**:
+            {Bullet points of main discoveries}
+
+            **Sources Consulted**:
+            {List of main URLs/sources used}
+
+            **Next Steps**:
+            ⏳ A pull request will be automatically created with the documentation for review.
+            Once the PR is reviewed and merged, the knowledge will be available in `knowledge/{topic-name}/`
+
+            **Commit**: ${COMMIT_SHA}
+
+            ---
+            *Generated by GPWK Knowledge Capture* | Issue #${{ steps.issue.outputs.number }}
+            EOF
+            )
+
+            # Post result using GPWK Python backend
+            echo "$RESULT" | gpwk/bin/gpwk-comment ${{ steps.issue.outputs.number }}
+
+            # Mark as AI complete (awaiting human review of PR)
+            gpwk/bin/gpwk-delegate --mark-complete ${{ steps.issue.outputs.number }}
+            ```
+
+            ---
+
+            ## IMPORTANT REQUIREMENTS
+
+            1. **DO NOT skip research** - Use WebSearch/WebFetch to gather real information
+            2. **Create ALL three files** - README.md, technical-reference.md, sources.md
+            3. **Write comprehensive content** - Not just templates, but actual researched content
+            4. **Commit changes** - Create a local commit (PR will be auto-created by workflow)
+            5. **Post results** - Use gpwk-comment to report back with PR notification
+            6. **Mark complete** - Use gpwk-delegate --mark-complete
+
+            ## TOOLS AVAILABLE
+
+            - **WebSearch**: Search the internet for information
+            - **WebFetch**: Fetch and analyze web pages
+            - **Read**: Read existing files
+            - **Write**: Create new documentation files
+            - **Bash**: Run git commands, gh CLI, GPWK commands
+            - **Grep/Glob**: Search for existing knowledge to avoid duplication
+
+            ## SUCCESS CRITERIA
+
+            ✅ Topic researched using internet sources
+            ✅ Three documentation files created with real content
+            ✅ Files committed locally (PR will be auto-created)
+            ✅ Results posted to issue with PR notification
+            ✅ Issue marked with status:ai-complete label
+
+            ---
+
+            **Execute this task now following all steps above!**
+
+          claude_args: '--allowed-tools "Bash,Read,Write,WebSearch,WebFetch,Grep,Glob"'
+
+      - name: Create Pull Request
+        id: create-pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GPWK_PAT || secrets.GITHUB_TOKEN }}
+          commit-message: "AI Knowledge Capture completed"
+          branch: gpwk-knowledge-${{ steps.issue.outputs.number }}
+          delete-branch: true
+          title: "📚 Knowledge Capture: Issue #${{ steps.issue.outputs.number }}"
+          body: |
+            ## AI-Generated Knowledge Documentation
+
+            This PR contains research and documentation generated by the GPWK Knowledge Capture workflow.
+
+            **Source Issue**: #${{ steps.issue.outputs.number }}
+            **Generated By**: Claude Sonnet 4.5 via GPWK Knowledge Capture
+
+            ### Review Checklist
+            - [ ] Documentation is accurate and well-researched
+            - [ ] Sources are properly cited
+            - [ ] Content is appropriate for the knowledge base
+            - [ ] No sensitive information is exposed
+
+            ### Files Changed
+            Review the changes in the `knowledge/` directory.
+
+            ---
+            🤖 _Auto-generated by GPWK Knowledge Capture workflow_
+          labels: |
+            gpwk:knowledge
+            status:ai-complete
+          draft: false
+
+      - name: Link PR to Issue
+        if: steps.create-pr.outputs.pull-request-number
+        run: |
+          PR_NUMBER="${{ steps.create-pr.outputs.pull-request-number }}"
+          ISSUE_NUMBER="${{ steps.issue.outputs.number }}"
+
+          if [ -n "$PR_NUMBER" ]; then
+            echo "✅ Pull request #${PR_NUMBER} created successfully"
+
+            # Post PR link to issue
+            gh issue comment ${ISSUE_NUMBER} --body "📋 **Pull Request Created**: #${PR_NUMBER}
+
+            The AI-generated knowledge documentation is ready for review. Please review the changes and merge the PR to add this knowledge to the repository."
+          else
+            echo "ℹ️  No changes detected - PR not created"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GPWK_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Verify changes
+        if: always()
+        run: |
+          echo "Checking if new knowledge was added..."
+          git log -1 --stat
+          echo ""
+          echo "Recent commits:"
+          git log --oneline -5

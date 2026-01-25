@@ -1,0 +1,302 @@
+name: Claude GPWK Agent
+
+on:
+  # Use case 1: Auto-triage for new issues
+  issues:
+    types: [opened, labeled]
+
+  # Use case 2: Scheduled AI task delegation (every 4 hours on weekdays)
+  schedule:
+    - cron: '0 */4 * * 1-5'  # Every 4 hours, Monday-Friday
+
+  # Use case 3: @claude-gpwk mention responder
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      action_type:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - triage
+          - delegate
+          - plan
+          - custom
+      custom_prompt:
+        description: 'Custom prompt (only for custom action)'
+        required: false
+        type: string
+
+jobs:
+  gpwk-agent:
+    # Conditional execution based on trigger type
+    if: |
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' && github.event.action == 'opened') ||
+      (github.event_name == 'issues' && github.event.action == 'labeled' && contains(github.event.label.name, 'pwk:')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude-gpwk')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude-gpwk')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude-gpwk'))
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      id-token: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'gpwk/lib/python/requirements.txt'
+
+      - name: Install GPWK Python dependencies
+        run: |
+          cd gpwk/lib/python
+          python3 -m venv venv
+          venv/bin/pip install --upgrade pip
+          venv/bin/pip install -r requirements.txt
+
+          # Verify installation
+          echo "✅ GPWK Python environment ready"
+          venv/bin/python3 -c "import opentelemetry; import github; print('OpenTelemetry and PyGithub installed successfully')"
+
+      - name: Configure GPWK environment
+        run: |
+          # Make GPWK scripts executable
+          chmod +x gpwk/bin/gpwk-*
+
+          # Add GPWK bin to PATH for easier access
+          echo "${{ github.workspace }}/gpwk/bin" >> $GITHUB_PATH
+
+          echo "✅ GPWK scripts configured"
+
+      - name: Determine action type
+        id: action-type
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "type=delegate" >> $GITHUB_OUTPUT
+            echo "Action: Scheduled AI task delegation"
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "type=${{ inputs.action_type }}" >> $GITHUB_OUTPUT
+            echo "Action: Manual trigger - ${{ inputs.action_type }}"
+          elif [ "${{ github.event_name }}" == "issues" ] && [ "${{ github.event.action }}" == "opened" ]; then
+            echo "type=triage" >> $GITHUB_OUTPUT
+            echo "Action: Auto-triage new issue #${{ github.event.issue.number }}"
+          elif [ "${{ github.event_name }}" == "issues" ] && [ "${{ github.event.action }}" == "labeled" ]; then
+            echo "type=triage" >> $GITHUB_OUTPUT
+            echo "Action: Triage labeled issue #${{ github.event.issue.number }}"
+          else
+            echo "type=mention" >> $GITHUB_OUTPUT
+            echo "Action: Respond to @claude-gpwk mention"
+          fi
+
+      - name: Verify GPWK_PAT is set
+        run: |
+          if [ -n "${{ secrets.GPWK_PAT }}" ]; then
+            echo "✅ GPWK_PAT secret is configured"
+          else
+            echo "⚠️  GPWK_PAT secret is NOT configured - will use GITHUB_TOKEN"
+          fi
+
+      - name: Run GPWK Agent
+        uses: anthropics/claude-code-action@v1
+        env:
+          # GitHub authentication - Use GPWK_PAT for project access, fallback to GITHUB_TOKEN
+          GH_TOKEN: ${{ secrets.GPWK_PAT || secrets.GITHUB_TOKEN }}
+
+          # OpenTelemetry configuration (using GitHub secrets/variables)
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT || vars.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS || vars.OTEL_EXPORTER_OTLP_HEADERS }}
+          OTEL_SERVICE_NAME: "gpwk-github-action"
+          OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=github-actions,service.namespace=gpwk"
+
+          # GitHub configuration for GPWK
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ISSUE_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GPWK_PAT || secrets.GITHUB_TOKEN }}
+          show_full_output: true  # Enable full output for debugging
+
+          # Dynamic prompt based on action type
+          prompt: |
+            CONTEXT:
+            - Repository: ${{ github.repository }}
+            - Triggered by: ${{ github.event_name }}
+            - Action type: ${{ steps.action-type.outputs.type }}
+            ${{ github.event.issue.number && format('- Issue: #{0}', github.event.issue.number) || '' }}
+            ${{ github.event.pull_request.number && format('- PR: #{0}', github.event.pull_request.number) || '' }}
+
+            ---
+
+            ${{ steps.action-type.outputs.type == 'triage' && format('
+            ## AUTO-TRIAGE NEW ISSUE
+
+            A new issue has been created: #{0}
+
+            **YOUR TASK**: Use the gpwk-agent to perform intelligent triage.
+
+            **INSTRUCTIONS**:
+            1. Read the issue using: `gpwk/bin/gpwk-triage --review {0}`
+            2. Analyze the issue content to determine:
+               - What priority level is appropriate (!high/!medium/!low)?
+               - What energy level does it require (~deep/~shallow/~quick)?
+               - Is it AI-delegatable ([AI]) or personal ([P])?
+            3. Based on your analysis, use `gh` CLI to add appropriate labels:
+               - Type: `pwk:personal` (human-only) or `pwk:ai` (AI-delegatable)
+               - Priority: `priority:high`, `priority:medium`, or `priority:low`
+               - Energy: `energy:deep`, `energy:shallow`, or `energy:quick`
+               - **IMPORTANT**: DO NOT close any issues - let humans decide what to close
+            4. Add a comment explaining your triage decision using: `gpwk/bin/gpwk-comment {0} "your analysis"`
+
+            **REMEMBER**:
+            - Always use Python backends (`gpwk/bin/gpwk-*`) for full telemetry
+            - All operations will be tracked in OpenTelemetry
+            - Follow GPWK principles from `gpwk/memory/principles.md`
+            ', github.event.issue.number) }}
+
+            ${{ steps.action-type.outputs.type == 'delegate' && '
+            ## SCHEDULED AI TASK DELEGATION
+
+            **YOUR TASK**: Execute all AI-delegatable tasks in the project.
+
+            **INSTRUCTIONS**:
+            1. Use `gpwk/bin/gpwk-delegate --list` to check for tasks labeled with `pwk:ai`
+            2. **CRITICAL FILTER**: Skip any issues that already have `status:ai-complete` label
+               - These tasks are DONE and awaiting human review
+               - Do NOT re-process, re-execute, or move them
+               - They should remain in their current column until human closes them
+            3. If NO tasks found (after filtering):
+               - This is NORMAL and EXPECTED - exit successfully
+               - Do NOT post comments or create issues
+               - Simply report: "✓ No AI-delegatable tasks found. All clear!"
+            4. If tasks ARE found (after filtering):
+               - Review the list and confirm they are real tasks (not tests)
+               - Use `gpwk/bin/gpwk-delegate --execute` to execute all tasks
+               - The delegate script will perform the work
+               - Results will be posted as issue comments
+               - Labels will be updated to `status:ai-complete`
+            5. After delegation, provide a brief summary:
+               - How many tasks were processed (0 is a valid answer)
+               - Which issues were skipped due to ai-complete status
+               - Which issues were updated (if any)
+               - Any errors encountered (if any)
+
+            **IMPORTANT**:
+            - Finding 0 AI tasks is a SUCCESS condition, not an error
+            - Do NOT spend time investigating why there are no tasks
+            - Do NOT create test tasks or example tasks
+            - Simply complete successfully and move on
+            - NEVER re-process issues with status:ai-complete
+
+            **REMEMBER**:
+            - The Python backend has full telemetry
+            - All AI work will be tracked in OpenTelemetry
+            - Results are posted back to GitHub for human review
+            ' }}
+
+            ${{ steps.action-type.outputs.type == 'mention' && '
+            ## RESPOND TO @claude-gpwk MENTION
+
+            **YOUR TASK**: You have been mentioned in a GitHub conversation. Respond with full GPWK context and capabilities.
+
+            **INSTRUCTIONS**:
+            1. Read the comment/issue/PR that mentioned you
+            2. Understand what the user is requesting
+            3. Use appropriate GPWK commands to fulfill the request:
+               - Capture tasks: `gpwk/bin/gpwk-capture "description [AI] !priority ~energy"`
+               - Review issues: `gpwk/bin/gpwk-triage --review <numbers>`
+               - Close issues: `gpwk/bin/gpwk-triage --close <numbers>`
+               - Add comments: `gpwk/bin/gpwk-comment <number> "message" [--label X] [--close]`
+               - Delegate AI tasks: `gpwk/bin/gpwk-delegate [#issue]`
+               - Generate plans: `gpwk/bin/gpwk-plan [today|week]`
+            4. Use `gh pr comment` or `gh issue comment` to respond with your results
+
+            **REMEMBER**:
+            - You have access to ALL GPWK capabilities
+            - Always use Python backends for telemetry
+            - Read GPWK configuration from `gpwk/memory/` if needed
+            - Follow the user''s instructions in their mention
+            ' }}
+
+            ${{ steps.action-type.outputs.type == 'plan' && '
+            ## GENERATE DAILY PLAN
+
+            **YOUR TASK**: Generate a daily or weekly plan using GPWK.
+
+            **INSTRUCTIONS**:
+            1. Use `gpwk/bin/gpwk-plan today` to generate today''s plan
+            2. The plan will include:
+               - High priority tasks
+               - Energy-appropriate task distribution
+               - Carryover tracking
+               - AI vs personal task breakdown
+            3. Post the plan as a GitHub issue comment or create a new issue with the plan
+
+            **REMEMBER**:
+            - Plan generation uses full telemetry
+            - Respects principles from `gpwk/memory/principles.md`
+            - References goals from `gpwk/memory/goals.md`
+            ' }}
+
+            ${{ steps.action-type.outputs.type == 'custom' && format('
+            ## CUSTOM GPWK OPERATION
+
+            **USER REQUEST**: {0}
+
+            **YOUR TASK**: Execute the custom request using GPWK capabilities.
+
+            **AVAILABLE TOOLS**:
+            - `gpwk/bin/gpwk-capture` - Create tasks
+            - `gpwk/bin/gpwk-triage` - Review/close/move issues
+            - `gpwk/bin/gpwk-comment` - Add comments with labels
+            - `gpwk/bin/gpwk-delegate` - Execute AI tasks
+            - `gpwk/bin/gpwk-plan` - Generate plans
+            - `gpwk/bin/gpwk-review` - End-of-day reflection
+            - `gh` CLI - For GitHub operations not covered by Python backends
+
+            **REMEMBER**: Always prefer Python backends for telemetry!
+            ', inputs.custom_prompt) }}
+
+            ---
+
+            ## IMPORTANT REMINDERS
+
+            1. **Python-First Approach**: Always use `gpwk/bin/gpwk-*` commands instead of direct `gh` CLI when available
+            2. **Telemetry**: All Python backends emit OpenTelemetry data (traces, metrics, logs)
+            3. **Configuration**: Read from `gpwk/memory/` for GitHub config, principles, and goals
+            4. **Error Handling**: If a Python backend fails, report the error clearly
+            5. **Communication**: When done, post a summary comment to the relevant issue/PR
+
+            ## GPWK AGENT CONTEXT
+
+            You are operating as the **gpwk-agent** with these capabilities:
+            - Expert GPWK operator enforcing Python-first approach
+            - Full access to all GPWK commands and Python backends
+            - OpenTelemetry instrumentation for all operations
+            - GitHub Issues/Projects integration
+            - Access to GPWK memory (config, principles, goals)
+
+            Execute the task above following GPWK best practices!
+
+          # Use gpwk-agent subagent type for full GPWK capabilities
+          claude_args: '--agent gpwk-agent --allowed-tools "Bash,Read,Write,Grep,Glob"'

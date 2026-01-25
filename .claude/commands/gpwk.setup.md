@@ -3,7 +3,7 @@
 One-time setup to configure GitHub integration for Personal Work Kit.
 
 ## Arguments
-- `$ARGUMENTS` - Optional: repository name (default: `my-work`)
+- `$ARGUMENTS` - Optional: repository name (default: `personal-work`)
 
 ## Instructions
 
@@ -11,7 +11,7 @@ You are setting up GitHub-integrated Personal Work Kit (GPWK). This creates the 
 
 ### Step 1: Determine Repository
 
-Parse `$ARGUMENTS` for repository name. Default to `my-work` if not provided.
+Parse `$ARGUMENTS` for repository name. Default to `personal-work` if not provided.
 
 ```bash
 # Check if repo exists

@@ -7,22 +7,32 @@ Decompose complex work into a parent issue with linked sub-issues.
 
 ## Instructions
 
-You are breaking down complex work into manageable sub-issues. This creates a parent "work item" issue with linked child issues for each task.
+**IMPORTANT**: This command now uses the Python backend with OpenTelemetry instrumentation.
 
-### Step 1: Read Configuration
+### How It Works
 
-Read `gpwk/memory/github-config.md` for repository and project details.
+Simply call the Python executable to break down complex work. The Python backend handles:
+- ✅ Fetching existing issue details from GitHub
+- ✅ Analyzing work and generating structured breakdown
+- ✅ Creating parent work item issue
+- ✅ Creating linked sub-issues with proper labels
+- ✅ Setting up parent-child relationships
+- ✅ Full OpenTelemetry instrumentation (traces, metrics, logs)
 
-### Step 2: Determine Source
+### Execute Command
 
-Parse `$ARGUMENTS`:
-- If starts with `#` → Breaking down an existing issue
-- Otherwise → Creating a new work item from scratch
-
-**For existing issue:**
 ```bash
-gh issue view <number> --repo <owner>/<repo> --json title,body,labels
+# Call Python backend from workspace root
+gpwk/bin/gpwk-breakdown "$ARGUMENTS"
 ```
+
+That's it! The Python backend handles the entire breakdown workflow.
+
+---
+
+## What the Breakdown Does
+
+You are breaking down complex work into manageable sub-issues. This creates a parent "work item" issue with linked child issues for each task.
 
 ### Step 3: Gather Context
 

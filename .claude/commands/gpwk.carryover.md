@@ -7,28 +7,32 @@ Update carryover labels on incomplete issues and prepare for the next day.
 
 ## Instructions
 
-You are processing end-of-day carryover, updating labels to track how many days issues have been carried forward.
+**IMPORTANT**: This command now uses the Python backend with OpenTelemetry instrumentation.
 
-### Step 1: Read Configuration
+### How It Works
 
-Read `gpwk/memory/github-config.md` for repository details.
+Simply call the Python executable to process carryover labels. The Python backend handles:
+- ✅ Fetching incomplete issues from Today column
+- ✅ Calculating label updates (c1 → c2 → c3)
+- ✅ Identifying issues needing breakdown (at c3)
+- ✅ Applying label changes to GitHub issues
+- ✅ Preview mode with --dry-run
+- ✅ Full OpenTelemetry instrumentation (traces, metrics, logs)
 
-### Step 2: Identify Carryover Candidates
-
-Find issues that were in "Today" but are still open:
+### Execute Command
 
 ```bash
-# Get issues from Today column that are still open
-gh project item-list <project-number> --owner @me --format json | \
-  jq '.items[] | select(.status == "Today" and .content.state == "OPEN")'
-
-# Get current carryover labels for these issues
-gh issue list \
-  --repo <owner>/<repo> \
-  --label "pwk:c1,pwk:c2,pwk:c3" \
-  --state open \
-  --json number,title,labels
+# Call Python backend from workspace root
+gpwk/bin/gpwk-carryover $ARGUMENTS
 ```
+
+That's it! The Python backend handles the entire carryover workflow.
+
+---
+
+## What Carryover Does
+
+You are processing end-of-day carryover, updating labels to track how many days issues have been carried forward.
 
 ### Step 3: Calculate Label Updates
 

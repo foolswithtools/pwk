@@ -22,15 +22,11 @@ Simply call the Python executable with the plan mode. The Python backend handles
 ### Execute Command
 
 ```bash
-# Get the script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GPWK_ROOT="$SCRIPT_DIR/../.."
-
 # Default to today if no argument provided
 MODE="${ARGUMENTS:-today}"
 
-# Call Python backend
-"$GPWK_ROOT/bin/gpwk-plan" "$MODE"
+# Call Python backend from workspace root
+gpwk/bin/gpwk-plan "$MODE"
 ```
 
 That's it! The Python backend handles everything automatically.
