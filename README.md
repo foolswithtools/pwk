@@ -41,7 +41,7 @@ GitHub-integrated variant using Issues and Projects:
 # To use GPWK, copy folder and commands to your project:
 cp -r gpwk /path/to/your/project/
 mkdir -p /path/to/your/project/.claude/commands
-cp gpwk/.claude/commands/*.md /path/to/your/project/.claude/commands/
+cp .claude/commands/gpwk.*.md /path/to/your/project/.claude/commands/
 
 # Then run setup:
 /gpwk.setup
