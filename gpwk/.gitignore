@@ -1,8 +1,32 @@
 # Local daily logs (personal, not versioned)
-logs/*.md
-!logs/.gitkeep
+#logs/*.md
+#!logs/.gitkeep
 
 # Don't commit github config with field IDs
 # (User should run setup on their machine)
 # Uncomment if you want to keep config local:
 # memory/github-config.md
+
+# Python artifacts
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+*.egg
+.eggs/
+
+# Local configuration with credentials (NEVER commit)
+config/alloy/.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

@@ -30,7 +30,21 @@ The `gh` CLI bridges Claude Code commands to your GitHub repository.
    # If not authenticated: gh auth login
    ```
 
-4. **Run setup:**
+4. **Install Python dependencies:**
+   ```bash
+   cd /path/to/your/project/gpwk/lib/python
+   pip install -e .
+   ```
+
+   Or use a virtual environment (recommended):
+   ```bash
+   cd /path/to/your/project/gpwk/lib/python
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -e .
+   ```
+
+5. **Run setup:**
    ```
    /gpwk.setup
    # Or specify a custom repo:
@@ -38,11 +52,11 @@ The `gh` CLI bridges Claude Code commands to your GitHub repository.
    ```
 
    This creates:
-   - A `personal-work` repository (or uses existing)
+   - A `my-work` repository (or uses existing/specified repo)
    - A GitHub Project with status columns
    - Labels for task types, priority, energy, and carryover
 
-4. **Customize your principles:**
+6. **Customize your principles (optional):**
    ```
    /gpwk.principles --edit
    ```
@@ -202,6 +216,22 @@ Edit `gpwk/memory/principles.md` to adjust:
 - Carryover thresholds
 - Delegation criteria
 - Energy matching rules
+
+## Security Notes
+
+**Important**: GPWK uses configuration files and environment variables that may contain sensitive information. Follow these security best practices:
+
+- **Never commit `.env` files** with real credentials
+- **Always use `.env.example`** as a template for configuration
+- **Use `gh auth login`** for GitHub authentication (no hardcoded tokens required)
+- **Configuration files** (`gpwk/memory/github-config.md`) contain project IDs which are safe to commit
+- **Grafana credentials** should only be in `gpwk/config/alloy/.env` (protected by `.gitignore`)
+- **Review `.gitignore`** to ensure sensitive files are excluded before committing
+
+If using Grafana Alloy for observability:
+- Keep API keys in environment variables or `.env` files (never committed)
+- The `.env` file is protected by `.gitignore` and should never be tracked in git
+- Always verify `.env` is not staged: `git check-ignore gpwk/config/alloy/.env`
 
 ## Comparison with PWK
 

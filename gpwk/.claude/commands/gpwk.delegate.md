@@ -1,219 +1,284 @@
 # GPWK Delegate
 
-Execute AI-delegatable tasks from GitHub Issues.
+Execute AI-delegatable tasks automatically with Claude, posting results as issue comments with full telemetry.
 
 ## Arguments
-- `$ARGUMENTS` - Optional: `--list`, `--execute`, `--execute #123`, or specific issue number
+- None required - Processes all `pwk:ai` labeled tasks
+- Optional: `#123` - Delegate specific issue number only
 
 ## Instructions
 
-You are managing and executing AI-delegatable tasks. These are issues labeled `pwk:ai` that Claude can work on autonomously.
+**IMPORTANT**: This command now uses the Python backend with OpenTelemetry instrumentation.
 
-### Step 1: Read Configuration
+### How It Works
 
-Read `gpwk/memory/github-config.md` for repository details.
-Read `gpwk/memory/principles.md` for delegation criteria.
+Simply call the Python executable to delegate AI tasks. The Python backend handles:
+- ✅ Fetching all issues with `pwk:ai` label
+- ✅ Executing tasks using Claude
+- ✅ Posting results as issue comments
+- ✅ Adding `status:ai-complete` label for review
+- ✅ Recording execution time and quality metrics
+- ✅ Full OpenTelemetry instrumentation (traces, metrics, logs)
 
-### Step 2: Parse Arguments
-
-- `--list` or empty → List all AI-delegatable tasks
-- `--execute` → Execute all pending AI tasks
-- `--execute #123` → Execute specific issue
-- `#123` → Execute specific issue
-
-### Step 3: List AI Tasks (if --list or no args)
+### Execute Command
 
 ```bash
-gh issue list \
-  --repo <owner>/<repo> \
-  --label "pwk:ai" \
-  --state open \
-  --json number,title,labels,body,createdAt \
-  --limit 50
+# Get the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GPWK_ROOT="$SCRIPT_DIR/../.."
+
+# Call Python backend
+if [ -n "$ARGUMENTS" ]; then
+  "$GPWK_ROOT/bin/gpwk-delegate" "$ARGUMENTS"
+else
+  "$GPWK_ROOT/bin/gpwk-delegate"
+fi
 ```
 
-Display:
+That's it! The Python backend executes AI tasks autonomously.
 
-```
-🤖 AI-Delegatable Tasks
+## Delegation Workflow
 
-Ready to Execute:
-  #127 - Research caching strategies
-  #129 - Generate API documentation
-  #205 - Research existing auth solutions
+1. **Find AI Tasks** - Fetches all open issues with `pwk:ai` label
+2. **For Each Task**:
+   - Read issue title and body
+   - Execute with Claude (using issue context)
+   - Generate comprehensive result
+   - Post result as comment
+   - Add `status:ai-complete` label
+   - Record telemetry (duration, tokens, success)
+3. **Summary Report** - Shows what was completed
 
-In Progress (has comments):
-  #131 - Summarize meeting notes (partial results posted)
+## Safe to Delegate
 
-Blocked:
-  #133 - Generate test cases (waiting on #132 to complete first)
+From your principles, these tasks are safe for AI:
 
-Run /gpwk.delegate --execute to run all ready tasks
-Run /gpwk.delegate #127 to run a specific task
-```
+✅ **Research and Information Gathering**
+- Aggregating information from multiple sources
+- Literature reviews
+- Technology comparisons
+- Best practices research
 
-### Step 4: Execute AI Task(s)
+✅ **Summarization and Synthesis**
+- Meeting notes structuring
+- Documentation summaries
+- Code review summaries (not decisions)
 
-For each task to execute:
+✅ **Content Generation**
+- First drafts of documentation
+- Boilerplate code generation
+- Test case generation
+- API documentation
+- Data formatting and cleanup
 
-#### 4a. Read the Issue
+✅ **Analysis**
+- Bug reproduction steps
+- Performance analysis reports
+- Dependency audits
 
-```bash
-gh issue view <number> --repo <owner>/<repo> --json title,body,labels,comments
-```
+## Keep Personal
 
-Extract:
-- What needs to be done (from title and body)
-- Any context from comments
-- Parent work item if this is a sub-issue
-
-#### 4b. Validate Delegation
-
-Check against principles in `gpwk/memory/principles.md`:
-
-**Safe to delegate:**
-- Research and information gathering
-- Summarization and synthesis
-- Drafting initial content
-- Generating boilerplate code
-- Creating documentation
-- Writing tests from specifications
-
-**Do NOT delegate (flag for human):**
+❌ **DO NOT delegate:**
 - Decisions with significant impact
-- Relationship-dependent tasks
-- Creative direction choices
-- Anything requiring human judgment
+- Relationship-dependent communication
+- Creative direction and vision
+- Anything requiring institutional knowledge
+- Final reviews and approvals
+- Customer-facing communication
+- Research requiring judgment calls
 
-If task appears to need human judgment, warn and skip unless forced.
+## Features
 
-#### 4c. Execute the Task
+### Python Backend Benefits
+- **Autonomous execution**: Runs without supervision
+- **Quality results**: Uses Claude's latest capabilities
+- **Safety checks**: Validates delegation appropriateness
+- **Result tracking**: Comments preserve full audit trail
+- **Full telemetry**: Track AI task patterns and ROI
 
-Based on task type, execute appropriate actions:
+### Telemetry Collected
+- **Traces**: Complete delegation flow in Grafana Tempo
+- **Metrics**: Tasks delegated, completion time, token usage, success rate
+- **Logs**: Structured logs in Grafana Loki
+- **Attributes**: Task type, complexity, duration, quality score
 
-**Research tasks:**
-- Use web search to gather information
-- Synthesize findings into structured notes
-- Include sources and references
+### AI Execution
 
-**Documentation tasks:**
-- Read relevant code files
-- Generate documentation following project conventions
-- Include examples where appropriate
+Each delegated task:
+- Gets full context from issue body
+- Uses Claude Sonnet 4.5 for execution
+- Generates comprehensive, actionable results
+- Posts result as markdown comment
+- Tracks token usage and cost
+- Records execution time
 
-**Code generation tasks:**
-- Understand requirements from issue
-- Generate code following project patterns
-- Include tests if appropriate
-
-**Summarization tasks:**
-- Read source material
-- Create concise, actionable summary
-- Highlight key points and decisions needed
-
-#### 4d. Post Results as Comment
+## Example Session
 
 ```bash
-gh issue comment <number> --repo <owner>/<repo> --body "$(cat <<'EOF'
-## AI Execution Results
-
-**Executed by**: Claude (via GPWK)
-**Date**: <timestamp>
-
-### Summary
-<brief summary of what was done>
-
-### Results
-
-<detailed results, findings, generated content>
-
-### Sources/References
-<if applicable>
-
-### Suggested Next Steps
-- <what should happen next>
-
----
-*This task was executed by AI delegation. Review results and close if satisfactory.*
-EOF
-)"
+/gpwk.delegate
 ```
 
-#### 4e. Update Issue Status
+Output:
+```
+🤖 GPWK AI Delegation Session
 
-If results are complete:
+Found 3 AI-delegatable tasks:
+
+[1/3] #17: Review Claude Code materials from Todd
+  Type: Research / Summary
+  Status: Delegating...
+  ✓ Completed in 45s (2,340 tokens)
+  📝 Posted result as comment
+  🏷️  Added status:ai-complete label
+
+[2/3] #18: Research AWS Batch for AI long-running jobs
+  Type: Research / Comparison
+  Status: Delegating...
+  ✓ Completed in 67s (3,120 tokens)
+  📝 Posted result as comment
+  🏷️  Added status:ai-complete label
+
+[3/3] #12: Research Google Antigravity IDE vs VS Code
+  Type: Research / Analysis
+  Status: Delegating...
+  ✓ Completed in 52s (2,890 tokens)
+  📝 Posted result as comment
+  🏷️  Added status:ai-complete label
+
+Delegation Complete!
+  • Tasks executed: 3
+  • Total time: 2m 44s
+  • Total tokens: 8,350
+  • Success rate: 100%
+
+Next Steps:
+  • Review results in issue comments
+  • Close issues if results are satisfactory
+  • Remove status:ai-complete label after review
+```
+
+## Delegating Specific Issue
+
 ```bash
-# Add label indicating AI work is done
-gh issue edit <number> --add-label "status:ai-complete"
-
-# Optionally move to a review column in project
+/gpwk.delegate #17
 ```
 
-If results are partial or need human review:
-```bash
-gh issue edit <number> --add-label "status:needs-review"
-```
+Delegates only issue #17.
 
-### Step 5: Update Local Log
+## Result Format
 
-Append to today's log:
+AI results are posted as comments with this structure:
 
 ```markdown
-## AI Delegation Log
-- HH:MM - Executed #127: Research caching strategies ✓
-- HH:MM - Executed #129: Generate API documentation ✓
-- HH:MM - Skipped #133: Waiting on dependency
+## 🤖 AI Delegation Result
+
+**Task**: Review Claude Code materials from Todd
+
+**Executed**: 2025-12-21 10:30 AM
+**Duration**: 45 seconds
+**Model**: Claude Sonnet 4.5
+
+### Summary
+
+[Executive summary of findings]
+
+### Key Points
+
+1. [Main finding 1]
+2. [Main finding 2]
+3. [Main finding 3]
+
+### Detailed Analysis
+
+[Comprehensive analysis]
+
+### Resources
+
+- [Link 1]
+- [Link 2]
+
+### Recommendations
+
+1. [Action item 1]
+2. [Action item 2]
+
+---
+*Generated by GPWK AI Delegation* | [View Telemetry](link to trace)
 ```
 
-### Step 6: Summary
+## Review Process
 
-After execution, display:
+After delegation:
 
+1. **Read AI results** - Review comment on each issue
+2. **Validate quality** - Ensure results meet your standards
+3. **Take action** - Use results to inform decisions
+4. **Close or iterate** - Close if complete, or add follow-up tasks
+5. **Remove label** - Remove `status:ai-complete` after review
+
+## Quality Standards
+
+AI results always include:
+- Clear executive summary
+- Detailed analysis with evidence
+- Actionable recommendations
+- Source citations where applicable
+- Limitations and caveats
+
+Results you can trust because:
+- Claude Sonnet 4.5 (latest, most capable)
+- Full context from issue body
+- Structured output format
+- Telemetry for quality tracking
+
+## Best Practices
+
+### When to Delegate
+- **After /gpwk.triage**: Delegate new AI tasks from Inbox
+- **During /gpwk.plan**: Execute AI queue while doing deep work
+- **Before decisions**: Get research done before meetings
+- **Batch processing**: Run delegation for multiple tasks at once
+
+### Delegation Criteria
+Ask: "Would this help me make a better decision?"
+- Research: YES - delegate fact-finding
+- Decision: NO - keep personal
+- Draft: YES - delegate first pass
+- Final: NO - review personally
+
+### Time Savings
+Average AI task: 45-90 seconds
+Equivalent human work: 30-90 minutes
+ROI: ~30-60x time savings on delegatable tasks
+
+## Integration Points
+
+- **Reads**: Issues with `pwk:ai` label
+- **Updates**: Adds `status:ai-complete` label
+- **Creates**: Issue comments with results
+- **Called from**: `/gpwk.plan` (suggested in AI queue)
+- **Feeds**: Your decision-making process
+
+## Troubleshooting
+
+**Error: Virtual environment not found**
+```bash
+cd gpwk/lib/python
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
-🤖 AI Delegation Complete
 
-Executed:
-  ✓ #127 - Research caching strategies (results posted)
-  ✓ #129 - Generate API documentation (results posted)
+**Error: Configuration not found**
+Run `/gpwk.setup` first to create GitHub configuration.
 
-Skipped:
-  ⏭ #133 - Waiting on #132 (dependency)
+**Error: No API key**
+Set ANTHROPIC_API_KEY environment variable.
 
-Needs Human Review:
-  ⚠ #131 - Results posted, needs your review
+**No AI tasks found:**
+Label tasks with `pwk:ai` using `/gpwk.capture "task [AI]"` or manually.
 
-Next steps:
-  • Review results: gh issue view 127
-  • Close completed: gh issue close 127
-  • Or run /gpwk.review to see today's summary
-```
-
-## Execution Modes
-
-### Batch Mode (--execute)
-Executes all ready AI tasks sequentially. Good for:
-- Morning AI task processing
-- Clearing the AI queue before end of day
-
-### Single Task Mode (#123)
-Executes one specific task. Good for:
-- Urgent research needs
-- Re-running a task with updated context
-
-### Interactive Mode
-If a task is ambiguous, ask clarifying questions before executing.
-
-## Error Handling
-
-- If issue not found: Report and continue with others
-- If execution fails: Post error as comment, flag for human
-- If rate limited: Pause and retry, or report partial completion
-- Network issues: Save partial results locally, retry later
-
-## Safety Guards
-
-1. Never execute tasks that modify external systems
-2. Never execute tasks that require credentials
-3. Never post to issues in repositories you don't own
-4. Always include "AI-generated" disclosure in comments
-5. Flag tasks that seem to require human judgment
+**View telemetry:**
+- Traces: Grafana Tempo (search for `gpwk_delegate`)
+- Metrics: Grafana Prometheus (`gpwk.delegate.*`)
+- Logs: Grafana Loki (label: `service_name="gpwk"`)

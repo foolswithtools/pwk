@@ -1,201 +1,174 @@
 # GPWK Triage
 
-Move issues between project columns (Inbox → Today/This Week/Backlog).
+Move issues between project columns (Inbox → Today/This Week/Backlog) with full telemetry.
 
 ## Arguments
-- `$ARGUMENTS` - Optional: `--inbox` to show inbox, `#123 today` to move specific issue
+- None required - Interactive triage session
 
 ## Instructions
 
-You are triaging issues in the GitHub Project, moving them from Inbox to appropriate time horizons.
+**IMPORTANT**: This command now uses the Python backend with OpenTelemetry instrumentation.
 
-### Step 1: Read Configuration
+### How It Works
 
-Read `gpwk/memory/github-config.md` for project and field IDs.
-Read `gpwk/memory/principles.md` for:
-- Daily task limit
-- Preferred work balance
+Simply call the Python executable for an interactive triage session. The Python backend handles:
+- ✅ Fetching all Inbox issues
+- ✅ Presenting issues for review with full context
+- ✅ Moving issues to appropriate columns
+- ✅ Updating project field statuses
+- ✅ Respecting daily task limits from principles
+- ✅ Full OpenTelemetry instrumentation (traces, metrics, logs)
 
-### Step 2: Parse Arguments
-
-- Empty or `--inbox` → Show Inbox and prompt for triage
-- `#123 today` → Move issue #123 to Today
-- `#123 week` → Move issue #123 to This Week
-- `#123 backlog` → Move issue #123 to Backlog
-- `--auto` → Auto-triage based on priority and age
-
-### Step 3: Fetch Inbox Items
+### Execute Command
 
 ```bash
-gh project item-list <project-number> --owner @me --format json | \
-  jq '.items[] | select(.status == "Inbox")'
+# Get the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GPWK_ROOT="$SCRIPT_DIR/../.."
+
+# Call Python backend
+"$GPWK_ROOT/bin/gpwk-triage"
 ```
 
-Also get current Today column count for capacity planning.
+That's it! The Python backend provides an interactive triage interface.
 
-### Step 4: Display Inbox
+## Triage Workflow
 
-```
-📥 Inbox Triage
+The triage session works through Inbox items:
 
-Current Today: 4 tasks (limit: 6)
-Capacity: 2 more tasks
+1. **Fetch Inbox Items** - Gets all issues with Status = "Inbox"
+2. **Present Each Issue** - Shows:
+   - Issue number and title
+   - Labels (type, priority, energy)
+   - Creation date
+   - Body preview
+3. **Prompt for Decision** - Options:
+   - `t` - Move to Today
+   - `w` - Move to This Week
+   - `b` - Move to Backlog
+   - `s` - Skip (keep in Inbox)
+   - `q` - Quit triage session
+4. **Apply Move** - Updates project status field
+5. **Respect Limits** - Warns if Today column exceeds daily task limit
 
-INBOX (5 items)
-────────────────────────────────────────
-#201 [AI] Research authentication patterns
-     Created: 2 days ago | Priority: - | Energy: -
-     Suggested: Today (AI task, can run in background)
+## Features
 
-#202 [P] Fix navigation bug
-     Created: 1 day ago | Priority: high | Energy: shallow
-     Suggested: Today (high priority)
+### Python Backend Benefits
+- **Interactive prompts**: Clear decision flow
+- **Context display**: See full issue details before deciding
+- **Limit enforcement**: Warns about overcommitment
+- **Bulk operations**: Triage multiple issues efficiently
+- **Full telemetry**: Track triage patterns and decision times
 
-#203 [P] Refactor database layer
-     Created: 3 days ago | Priority: medium | Energy: deep
-     Suggested: This Week (needs deep focus block)
+### Telemetry Collected
+- **Traces**: Complete triage session flow in Grafana Tempo
+- **Metrics**: Issues triaged, time per decision, column distribution
+- **Logs**: Structured logs in Grafana Loki
+- **Attributes**: Session duration, decisions made, warnings issued
 
-#204 [capture] Call with stakeholder about timeline
-     Created: today | Priority: - | Energy: -
-     Suggested: Convert to task or calendar event
+### Smart Features
 
-#205 [P] Update README with new features
-     Created: 1 week ago | Priority: low | Energy: quick
-     Suggested: Backlog or quick win slot
+- **Daily limit warnings**: Alerts when Today column gets too full
+- **Priority highlighting**: High priority issues shown prominently
+- **Energy matching**: Suggests columns based on energy labels
+- **Carryover awareness**: Flags issues already carried over multiple days
 
-────────────────────────────────────────
+## Project Columns
 
-Commands:
-  /gpwk.triage #201 today     Move to Today
-  /gpwk.triage #203 week      Move to This Week
-  /gpwk.triage #205 backlog   Move to Backlog
-  /gpwk.triage --auto         Auto-triage all
-```
+- **Inbox** - New captures needing triage
+- **Today** - Tasks for today (limited by principles)
+- **This Week** - Tasks for this week
+- **Backlog** - Future tasks, nice-to-haves
+- **Done** - Completed (managed by /gpwk.capture and /gpwk.review)
 
-### Step 5: Move Issue (if specific issue provided)
+## Example Session
 
 ```bash
-# Get the project item ID for this issue
-ITEM_ID=$(gh project item-list <project-number> --owner @me --format json | \
-  jq -r '.items[] | select(.content.number == <issue-number>) | .id')
-
-# Get the option ID for the target status
-# (This requires knowing the field and option IDs from setup)
-
-# Update the status
-gh project item-edit \
-  --project-id <project-id> \
-  --id $ITEM_ID \
-  --field-id <status-field-id> \
-  --single-select-option-id <target-status-option-id>
+/gpwk.triage
 ```
 
-### Step 6: Handle Captures
-
-For items with `pwk:capture` label, offer options:
-
+Output:
 ```
-#204 is a capture, not a task yet.
+🗂️  GPWK Triage Session
 
-Options:
-  1. Convert to task [P] - Keep as personal task
-  2. Convert to task [AI] - Mark as AI-delegatable
-  3. Move to calendar - This is an event, not a task
-  4. Delete - No longer relevant
-  5. Keep in Inbox - Need more info
+Inbox: 7 items
 
-Choice:
-```
+[1/7] Issue #46: Testing Python telemetry to Grafana Alloy
+  Labels: pwk:capture
+  Created: 2025-12-20
 
-If converting to task:
-```bash
-gh issue edit <number> --remove-label "pwk:capture" --add-label "pwk:personal"
-```
+  Move to: (t)oday, (w)eek, (b)acklog, (s)kip, (q)uit? b
+  ✓ Moved to Backlog
 
-### Step 7: Auto-Triage (--auto)
+[2/7] Issue #47: Test with parentheses (My Dog) and 'quotes' works!
+  Labels: pwk:capture
+  Created: 2025-12-20
 
-Apply these rules:
+  Move to: (t)oday, (w)eek, (b)acklog, (s)kip, (q)uit? b
+  ✓ Moved to Backlog
 
-1. **High priority** → Today (if capacity allows)
-2. **AI tasks** → Today (they run in background)
-3. **Quick wins** → Today (good for energy management)
-4. **Deep work** → This Week (need to schedule properly)
-5. **Low priority / old captures** → Backlog
-6. **Over capacity** → This Week
+[3/7] Issue #27: Create PowerPoint with Grafana implementation details
+  Labels: pwk:personal, priority:medium
+  Created: 2025-12-17
+  Due: 2025-12-22 (Monday)
 
-```
-🤖 Auto-Triage Results
+  Move to: (t)oday, (w)eek, (b)acklog, (s)kip, (q)uit? w
+  ✓ Moved to This Week
 
-Moved to Today:
-  ✓ #201 - Research auth patterns [AI]
-  ✓ #202 - Fix navigation bug [high priority]
+⚠️  Today column now has 4 tasks (limit: 4-6)
+  Consider using This Week for lower priority items
 
-Moved to This Week:
-  ✓ #203 - Refactor database layer [deep work]
-
-Moved to Backlog:
-  ✓ #205 - Update README [low priority]
-
-Needs Manual Decision:
-  ⚠ #204 - Capture needs conversion
-
-Today is now at: 6/6 tasks (full)
-```
-
-### Step 8: Capacity Warnings
-
-If Today is at or over capacity:
-
-```
-⚠️ Today is at capacity (6/6 tasks)
-
-Options:
-  1. Move something from Today to This Week
-  2. Proceed anyway (may cause carryover)
-  3. Cancel this triage
-
-Current Today tasks:
-  #198 - Implement login flow [P] ~deep
-  #199 - Review PR comments [P] ~shallow
-  ...
-```
-
-### Step 9: Update Local Log
-
-If changes were made, note in today's log:
-
-```markdown
-## Triage Log
-- HH:MM - Moved #201 to Today
-- HH:MM - Moved #203 to This Week
-- HH:MM - Converted #204 from capture to task
-```
-
-### Step 10: Confirm
-
-```
-✓ Triage Complete
-
-Changes:
-  → Today: +2 (now 6 tasks)
-  → This Week: +1
-  → Backlog: +1
-
-Inbox remaining: 1 item (needs manual decision)
-
-Run /gpwk.plan today to see updated daily plan
+Triage complete!
+  • Processed: 7 items
+  • Today: 1
+  • This Week: 1
+  • Backlog: 5
+  • Duration: 2m 15s
 ```
 
 ## Best Practices
 
-- Triage inbox at least once daily (morning recommended)
-- Keep Today at or under your daily limit
-- Don't over-schedule deep work
-- AI tasks are "free" capacity-wise (run in background)
-- Convert captures promptly to maintain inbox zero
+### When to Triage
+- **Morning**: Before running `/gpwk.plan`
+- **Throughout day**: When new captures accumulate
+- **End of day**: During `/gpwk.review` if needed
 
-## Error Handling
+### Decision Guidelines
+- **Today**: Must be done today, aligns with today's priorities
+- **This Week**: Important but can wait 1-7 days
+- **Backlog**: Good idea but no urgency
+- **Skip**: Needs more info or waiting on dependency
 
-- If issue not in project: Add it first, then move
-- If field IDs invalid: Prompt to re-run /gpwk.setup
-- If capacity exceeded: Warn but allow override
+### Limit Management
+Your principles define daily task limits (default: 4-6 significant tasks)
+- Triage warns when approaching limit
+- Quick wins (~quick) don't count toward limit
+- Consider energy levels when filling Today column
+
+## Integration Points
+
+- **Reads**: `gpwk/memory/principles.md` for task limits
+- **Updates**: GitHub Project Status field
+- **Feeds**: `/gpwk.plan` (creates plan from Today column)
+- **Called by**: `/gpwk.review` (end-of-day cleanup)
+
+## Troubleshooting
+
+**Error: Virtual environment not found**
+```bash
+cd gpwk/lib/python
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**Error: Configuration not found**
+Run `/gpwk.setup` first to create GitHub configuration.
+
+**No items in Inbox:**
+Run `/gpwk.capture` to create tasks first.
+
+**View telemetry:**
+- Traces: Grafana Tempo (search for `gpwk_triage`)
+- Metrics: Grafana Prometheus (`gpwk.triage.*`)
+- Logs: Grafana Loki (label: `service_name="gpwk"`)
